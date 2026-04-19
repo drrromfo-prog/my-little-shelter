@@ -286,6 +286,10 @@ a {
   padding: 1.8rem 2rem 2.2rem;
 }
 
+.main.is-compact {
+  padding-top: 1.2rem;
+}
+
 .header-shell {
   display: flex;
   flex-direction: column;
@@ -567,6 +571,10 @@ a {
 
 .content-shell {
   margin-top: 1.25rem;
+}
+
+.main.is-compact .content-shell {
+  margin-top: 0;
 }
 
 .cards-grid {

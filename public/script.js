@@ -100,10 +100,6 @@ const PAGE_COPY = {
     title: "小小的，我的",
     subtitle: "不是宏大统计，更像一间会呼吸的私人档案室。"
   },
-  about: {
-    title: "About this place",
-    subtitle: "您找到了一个很好的藏身之处"
-  }
 };
 
 const SHOWCASE_ITEMS = [
@@ -809,7 +805,7 @@ function renderFilterPills() {
     .join("");
 }
 
-function buildFilterSummary(filteredItems, sourceItems) {
+function renderFilterSummary(filteredItems, sourceItems) {
   const parts = [];
   if (CATEGORY_META[currentNav]) {
     parts.push(`分类：${categoryLabel(currentNav)}`);
@@ -1383,29 +1379,6 @@ function renderMoodCalendar() {
   `;
 }
 
-function renderAboutPage() {
-  document.getElementById("about-content").innerHTML = `
-    <div class="view-shell">
-      <div class="view-head">
-        <div>
-          <h3>All About Me</h3>
-          <p>一个不太会直接说“我喜欢什么”的人，留给自己的旁白。</p>
-        </div>
-      </div>
-      <div class="about-story">
-        <div class="about-card">
-          <h3>左边</h3>
-          <p>我不太会跟人说我喜欢什么，所以建了这个地方。它不像社交主页，也不像公开片单，更像一间慢慢堆满纸张、封面、句子和心情的门房。</p>
-        </div>
-        <div class="about-card">
-          <h3>右边</h3>
-          <p>某天看了《刺猬的优雅》，荻里对荷妮说——您找到了一个很好的藏身之处。My Little Shelter 只是一个藏身之处，就像荷妮的那间门房。</p>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
 function renderTimeline() {
   const container = document.getElementById("timeline-content");
   const shelfItems = getShelfItems();
@@ -1492,7 +1465,7 @@ function renderTimeline() {
 }
 
 function setVisibleView(viewId) {
-  ["view-cards", "view-timeline", "view-stats", "view-quotes", "view-calendar", "view-about"].forEach((id) => {
+  ["view-cards", "view-timeline", "view-stats", "view-quotes", "view-calendar"].forEach((id) => {
     const element = document.getElementById(id);
     if (element) {
       element.style.display = id === viewId ? "block" : "none";
@@ -1502,6 +1475,16 @@ function setVisibleView(viewId) {
 
 function renderActiveView() {
   renderSidebarStats();
+
+  const headerShell = document.querySelector(".header-shell");
+  const mainShell = document.querySelector(".main");
+  const showFullHeader = currentNav === "all";
+  if (headerShell) {
+    headerShell.style.display = showFullHeader ? "" : "none";
+  }
+  if (mainShell) {
+    mainShell.classList.toggle("is-compact", !showFullHeader);
+  }
 
   if (currentNav === "timeline") {
     setVisibleView("view-timeline");
@@ -1524,12 +1507,6 @@ function renderActiveView() {
   if (currentNav === "calendar") {
     setVisibleView("view-calendar");
     renderMoodCalendar();
-    return;
-  }
-
-  if (currentNav === "about") {
-    setVisibleView("view-about");
-    renderAboutPage();
     return;
   }
 

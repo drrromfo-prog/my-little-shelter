@@ -84,10 +84,6 @@ const PAGE_COPY = {
     title: "Collected",
     subtitle: "这些构成了我理解世界的方式"
   },
-  timeline: {
-    title: "原来那时候我在看这个",
-    subtitle: "把自己一路看过、读过、停留过的痕迹摊开。"
-  },
   quotes: {
     title: "Quoted",
     subtitle: "被某句话击中的瞬间，想留住它"
@@ -1057,9 +1053,12 @@ function renderCards() {
   if (filtered.length === 0) {
     container.innerHTML = `
       <div class="empty">
-        <div class="empty-icon">${CATEGORY_META[currentNav] ? categoryEmoji(currentNav) : "⌂"}</div>
-        <div class="empty-text">这里暂时还没有东西</div>
-        <div class="empty-sub">换个筛选条件，或者从右上角开始添加第一条记录。</div>
+        <div class="empty-icon">${CATEGORY_META[currentNav] ? categoryEmoji(currentNav) : "✦"}</div>
+        <div class="empty-text">这里还空着</div>
+        <div class="empty-sub">先放进第一样你想留下的东西。</div>
+        <div class="empty-actions">
+          <button class="btn btn-primary" onclick="openAdd()">新增记录</button>
+        </div>
       </div>
     `;
     return;
@@ -1263,11 +1262,7 @@ function renderQuotesPage() {
 
   container.innerHTML = `
     <div class="view-shell">
-      <div class="view-head">
-        <div>
-          <h3>被某句话击中的瞬间</h3>
-          <p>把那些舍不得滑过去的句子留在这里。它们可能比剧情更晚散去。</p>
-        </div>
+      <div class="view-head view-head-compact view-head-end">
         <select class="sort-select" onchange="setQuoteWorkFilter(this.value)">
           <option value="all"${quoteWorkFilter === "all" ? " selected" : ""}>全部作品</option>
           ${quoteItems.map((item) => `<option value="${item.id}"${quoteWorkFilter === item.id ? " selected" : ""}>${escapeHtml(item.title)}</option>`).join("")}
@@ -1283,7 +1278,7 @@ function renderQuotesPage() {
               </div>
             `).join("")}
           </div>`
-        : `<div class="empty"><div class="empty-icon">❞</div><div class="empty-text">还没有摘录</div><div class="empty-sub">在详情页记下一句喜欢的话，它就会出现在这里。</div></div>`}
+        : `<div class="empty"><div class="empty-icon">❞</div><div class="empty-text">还没有摘录</div><div class="empty-sub">等你在详情里留下第一句。</div><div class="empty-actions"><button class="btn btn-primary" onclick="openAdd()">新增记录</button></div></div>`}
     </div>
   `;
 }
@@ -1357,11 +1352,7 @@ function renderMoodCalendar() {
 
   container.innerHTML = `
     <div class="view-shell">
-      <div class="view-head">
-        <div>
-          <h3>What it did to me</h3>
-          <p>按创建日期摊开一页私人日历，看看那天的作品、心情和一句没来得及整理的碎碎念。</p>
-        </div>
+      <div class="view-head view-head-compact view-head-end">
         <div style="display:flex;gap:0.55rem;align-items:center;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="shiftCalendarMonth(-1)">← 上个月</button>
           <span class="filter-summary">${formatCalendarMonth(calendarCursor)}</span>
@@ -1379,93 +1370,8 @@ function renderMoodCalendar() {
   `;
 }
 
-function renderTimeline() {
-  const container = document.getElementById("timeline-content");
-  const shelfItems = getShelfItems();
-  const doneItems = shelfItems.filter((item) => item.status === "done").sort((left, right) => right.addedAt - left.addedAt);
-  const remindItems = shelfItems.filter((item) => item.status === "want" && item.remind).sort((left, right) => left.remind.localeCompare(right.remind));
-
-  if (doneItems.length === 0 && remindItems.length === 0) {
-    container.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">⋯</div>
-        <div class="empty-text">时间线还很安静</div>
-        <div class="empty-sub">你看过、读过、停留过的东西，会慢慢在这里排成一条路。</div>
-      </div>
-    `;
-    return;
-  }
-
-  const monthGroups = {};
-  doneItems.forEach((item) => {
-    const date = new Date(item.addedAt);
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    if (!monthGroups[key]) {
-      monthGroups[key] = [];
-    }
-    monthGroups[key].push(item);
-  });
-
-  let html = "";
-
-  if (remindItems.length > 0) {
-    html += '<div class="tl-year">等待中的东西</div><div class="tl-month-group"><div class="tl-month">提醒清单</div><div class="tl-items">';
-    html += remindItems.map((item) => `
-      <div class="tl-item" onclick="openDetail('${item.id}')">
-        ${item.cover
-          ? `<img class="tl-item-cover" src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" onerror="this.outerHTML='<div class=&quot;tl-item-cover-ph&quot;>${categoryEmoji(item.type)}</div>'" />`
-          : `<div class="tl-item-cover-ph">${categoryEmoji(item.type)}</div>`}
-        <div class="tl-item-body">
-          <div class="tl-item-top">
-            <div>
-              <div class="tl-item-title">${escapeHtml(item.title)}</div>
-              <div class="tl-item-meta">${escapeHtml(item.remind)}${isOverdue(item.remind) ? " · 已过期" : ""}</div>
-            </div>
-            <span class="card-badge s-want" style="position:static">${statusLabel(item.status, item.type)}</span>
-          </div>
-        </div>
-      </div>
-    `).join("");
-    html += "</div></div>";
-  }
-
-  const years = [...new Set(Object.keys(monthGroups).map((key) => key.split("-")[0]))].sort((left, right) => Number(right) - Number(left));
-  years.forEach((year) => {
-    html += `<div class="tl-year">${year}</div>`;
-    const monthKeys = Object.keys(monthGroups).filter((key) => key.startsWith(year)).sort((left, right) => right.localeCompare(left));
-
-    monthKeys.forEach((monthKey) => {
-      const month = monthKey.split("-")[1];
-      const monthItems = monthGroups[monthKey];
-
-      html += `<div class="tl-month-group"><div class="tl-month">${Number(month)} 月 · ${monthItems.length} 条</div><div class="tl-items">`;
-      html += monthItems.map((item) => `
-        <div class="tl-item" onclick="openDetail('${item.id}')">
-          ${item.cover
-            ? `<img class="tl-item-cover" src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" onerror="this.outerHTML='<div class=&quot;tl-item-cover-ph&quot;>${categoryEmoji(item.type)}</div>'" />`
-            : `<div class="tl-item-cover-ph">${categoryEmoji(item.type)}</div>`}
-          <div class="tl-item-body">
-            <div class="tl-item-top">
-              <div>
-                <div class="tl-item-title">${escapeHtml(item.title)}</div>
-                <div class="tl-item-meta">${escapeHtml([item.creator, item.year].filter(Boolean).join(" · "))}</div>
-              </div>
-              <span class="tl-item-mood">${escapeHtml(item.mood || "")}</span>
-            </div>
-            ${item.rating ? `<div class="card-meta" style="margin-top:0.3rem">${formatRatingLabel(item.rating)}</div>` : ""}
-            ${itemPreviewText(item) ? `<div class="tl-item-note">${escapeHtml(itemPreviewText(item))}</div>` : ""}
-          </div>
-        </div>
-      `).join("");
-      html += "</div></div>";
-    });
-  });
-
-  container.innerHTML = html;
-}
-
 function setVisibleView(viewId) {
-  ["view-cards", "view-timeline", "view-stats", "view-quotes", "view-calendar"].forEach((id) => {
+  ["view-cards", "view-stats", "view-quotes", "view-calendar"].forEach((id) => {
     const element = document.getElementById(id);
     if (element) {
       element.style.display = id === viewId ? "block" : "none";
@@ -1492,12 +1398,6 @@ function renderActiveView() {
   }
   if (mainShell) {
     mainShell.classList.toggle("is-compact", !showFullHeader);
-  }
-
-  if (currentNav === "timeline") {
-    setVisibleView("view-timeline");
-    renderTimeline();
-    return;
   }
 
   if (currentNav === "stats") {

@@ -69,7 +69,7 @@ const PAGE_COPY = {
     subtitle: "所有的真实都值得被目击一次"
   },
   book: {
-    title: "underlined",
+    title: "Underlined",
     subtitle: "阅读过的字会留在我身体里，像某个血小板"
   },
   want: {
@@ -93,7 +93,7 @@ const PAGE_COPY = {
     subtitle: "被某句话击中的瞬间，想留住它"
   },
   calendar: {
-    title: "What It Did To Me",
+    title: "WhatIt Did To Me？",
     subtitle: "它对我做了一些我无法描述的事。"
   },
   stats: {
@@ -1477,10 +1477,18 @@ function renderActiveView() {
   renderSidebarStats();
 
   const headerShell = document.querySelector(".header-shell");
+  const headerCopy = document.querySelector(".header-copy");
+  const toolbarShell = document.querySelector(".toolbar-shell");
   const mainShell = document.querySelector(".main");
   const showFullHeader = currentNav === "all";
   if (headerShell) {
-    headerShell.style.display = showFullHeader ? "" : "none";
+    headerShell.style.display = "";
+  }
+  if (headerCopy) {
+    headerCopy.style.display = "";
+  }
+  if (toolbarShell) {
+    toolbarShell.style.display = showFullHeader ? "" : "none";
   }
   if (mainShell) {
     mainShell.classList.toggle("is-compact", !showFullHeader);

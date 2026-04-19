@@ -4,9 +4,23 @@ let myMood = "";
 let editId = null;
 let currentNav = "all";
 let activePill = "type-all";
+let viewMode = "grid";
 let rewatchTargetId = null;
 let quoteWorkFilter = "all";
 let calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let advancedFiltersExpanded = false;
+
+const advancedFilters = {
+  ratingMin: "",
+  tags: "",
+  year: "",
+  type: "all",
+  status: "all"
+};
+
+const MIN_SHOWCASE_ITEMS = 14;
+const DEFAULT_ACCENT = "#b8ab9b";
+const AMBIENT_FALLBACK = ["#cfc2b1", "#ece2d4"];
 
 const MOODS = [
   { emoji: "😊", label: "开心" },
@@ -15,21 +29,363 @@ const MOODS = [
   { emoji: "😢", label: "难过" },
   { emoji: "😌", label: "治愈" },
   { emoji: "😰", label: "紧张" },
-  { emoji: "😂", label: "搞笑" },
-  { emoji: "🤔", label: "深思" },
-  { emoji: "😴", label: "无聊" },
-  { emoji: "🥰", label: "喜爱" }
+  { emoji: "😂", label: "好笑" },
+  { emoji: "🤔", label: "回想很久" },
+  { emoji: "😴", label: "昏昏欲睡" },
+  { emoji: "🥰", label: "喜欢" }
 ];
 
 const TAG_COLORS = ["tc0", "tc1", "tc2", "tc3", "tc4", "tc5"];
+
 const CATEGORY_META = {
-  movie: { label: "电影", icon: "🎬", subtitle: "现实轻微变形的两小时" },
-  tv: { label: "电视剧", icon: "📺", subtitle: "怎么一集接一集的停不下来？" },
-  anime: { label: "动漫", icon: "✨", subtitle: "现实的物理规则在这里不适用，感谢" },
-  documentary: { label: "纪录片", icon: "🎞️", subtitle: "所有的真实都值得被目击一次" },
-  book: { label: "书籍", icon: "📚", subtitle: "阅读过的字会留在我身体里，像某个血小板" }
+  movie: { label: "电影", icon: "🎞", defaultAccent: "#9d7a65" },
+  tv: { label: "电视剧", icon: "📺", defaultAccent: "#6f7d97" },
+  anime: { label: "动漫", icon: "✦", defaultAccent: "#9b82aa" },
+  documentary: { label: "纪录片", icon: "🜁", defaultAccent: "#7d8d76" },
+  book: { label: "书籍", icon: "📚", defaultAccent: "#b48f63" }
 };
+
 const CATEGORY_FILTER_ORDER = ["movie", "tv", "anime", "documentary", "book"];
+
+const PAGE_COPY = {
+  all: {
+    title: "Vous avez trouvé un très bon refuge",
+    subtitle: "您找到了一个很好的藏身之处"
+  },
+  movie: {
+    title: "Slightly off",
+    subtitle: "现实轻微变形的两小时"
+  },
+  tv: {
+    title: "Episode After Episode",
+    subtitle: "怎么一集接一集地停不下来？"
+  },
+  anime: {
+    title: "Elsewhere",
+    subtitle: "现实的物理规则在这里不适用，感谢"
+  },
+  documentary: {
+    title: "Observed",
+    subtitle: "所有的真实都值得被目击一次"
+  },
+  book: {
+    title: "underlined",
+    subtitle: "阅读过的字会留在我身体里，像某个血小板"
+  },
+  want: {
+    title: "Just...Not yet",
+    subtitle: "还没到那个晚上"
+  },
+  progress: {
+    title: "In Progress",
+    subtitle: "还没结束，所以还不知道它会对我做什么"
+  },
+  done: {
+    title: "Collected",
+    subtitle: "这些构成了我理解世界的方式"
+  },
+  timeline: {
+    title: "原来那时候我在看这个",
+    subtitle: "把自己一路看过、读过、停留过的痕迹摊开。"
+  },
+  quotes: {
+    title: "Quoted",
+    subtitle: "被某句话击中的瞬间，想留住它"
+  },
+  calendar: {
+    title: "What It Did To Me",
+    subtitle: "它对我做了一些我无法描述的事。"
+  },
+  stats: {
+    title: "小小的，我的",
+    subtitle: "不是宏大统计，更像一间会呼吸的私人档案室。"
+  },
+  about: {
+    title: "About this place",
+    subtitle: "您找到了一个很好的藏身之处"
+  }
+};
+
+const SHOWCASE_ITEMS = [
+  {
+    id: "mock-movie-dune-2",
+    title: "沙丘：第二部",
+    type: "movie",
+    creator: "Denis Villeneuve",
+    year: "2024",
+    rating: 9.2,
+    dscore: "8.8",
+    tags: ["史诗", "沙漠预言", "二刷推荐", "宿命"],
+    status: "done",
+    cover: "https://picsum.photos/seed/shelter-dune/420/620",
+    accentColor: "#b38c64",
+    quickNote: "像被一股缓慢而坚定的风推着往前走。",
+    note: "声音设计和沙漠质感几乎把整个人包裹住，像在看一场注定要发生的神话。",
+    mood: "🤯",
+    favorite: true,
+    revisit: true,
+    rewatches: [{ date: "2026-02-04", note: "二刷时反而更在意角色的犹豫。" }],
+    quotes: ["权力最先改变的，永远是被相信的人。"],
+    addedAt: Date.parse("2026-04-17T09:20:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-tv-fleabag",
+    title: "伦敦生活 第二季",
+    type: "tv",
+    creator: "Phoebe Waller-Bridge",
+    year: "2019",
+    rating: 9.4,
+    dscore: "9.5",
+    tags: ["亲密关系", "黑色幽默", "台词锋利"],
+    status: "done",
+    cover: "https://picsum.photos/seed/shelter-fleabag/420/620",
+    accentColor: "#7d6c79",
+    quickNote: "笑着笑着突然被掐住喉咙。",
+    note: "它厉害的地方在于，嘴上看起来都像玩笑，但每一句都在逼人承认自己的孤独。",
+    mood: "🥹",
+    favorite: true,
+    quotes: ["People are all we've got."],
+    addedAt: Date.parse("2026-04-16T18:05:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-anime-frieren",
+    title: "葬送的芙莉莲",
+    type: "anime",
+    creator: "斋藤圭一郎",
+    year: "2023",
+    rating: 9.1,
+    dscore: "9.4",
+    tags: ["旅途", "温柔的时间", "魔法", "余味很长"],
+    status: "progress",
+    cover: "https://picsum.photos/seed/shelter-frieren/420/620",
+    accentColor: "#809c93",
+    progress: "正在看到 18 / 28",
+    quickNote: "它不是要你哭，只是慢慢让你意识到时间真的会带走很多东西。",
+    mood: "😌",
+    notesCount: 3,
+    addedAt: Date.parse("2026-04-15T07:30:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-book-elegance",
+    title: "刺猬的优雅",
+    type: "book",
+    creator: "Muriel Barbery",
+    year: "2006",
+    rating: 8.9,
+    dscore: "8.3",
+    tags: ["藏身之处", "法式敏感", "轻轻刺痛"],
+    status: "done",
+    cover: "https://picsum.photos/seed/shelter-elegance/420/620",
+    accentColor: "#9c7e68",
+    quickNote: "有些句子像偷偷把一盏灯放到你手心里。",
+    note: "它提醒我，安静并不代表贫瘠，躲藏也可能是一种精细的生存。",
+    mood: "🥰",
+    quotes: ["您找到了一个很好的藏身之处。"],
+    addedAt: Date.parse("2026-04-14T14:48:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-doc-free-solo",
+    title: "徒手攀岩",
+    type: "documentary",
+    creator: "伊丽莎白·柴·瓦沙瑞莉 / 金国威",
+    year: "2018",
+    rating: 8.7,
+    dscore: "8.9",
+    tags: ["极限", "身体边界", "真实惊险"],
+    status: "done",
+    cover: "https://picsum.photos/seed/shelter-freesolo/420/620",
+    accentColor: "#7a8f8e",
+    quickNote: "真相因为无配乐的岩壁，反而显得更惊人。",
+    mood: "😰",
+    addedAt: Date.parse("2026-04-13T12:12:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-tv-westworld",
+    title: "西部世界 第二季",
+    type: "tv",
+    creator: "Lisa Joy / Jonathan Nolan",
+    year: "2018",
+    rating: 8.4,
+    dscore: "8.9",
+    tags: ["意识", "迷宫", "赛博荒野", "重构记忆"],
+    status: "progress",
+    cover: "https://picsum.photos/seed/shelter-westworld/420/620",
+    accentColor: "#8b6c61",
+    progress: "正在追到 S2 E5",
+    quickNote: "每次以为看懂了，它就再往下挖一层。",
+    mood: "🤔",
+    notesCount: 2,
+    addedAt: Date.parse("2026-04-12T20:10:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-book-three-body",
+    title: "三体",
+    type: "book",
+    creator: "刘慈欣",
+    year: "2006",
+    rating: 9.0,
+    dscore: "8.9",
+    tags: ["科幻", "宇宙尺度", "文明焦虑", "页页好看"],
+    status: "progress",
+    cover: "https://picsum.photos/seed/shelter-threebody/420/620",
+    accentColor: "#7a8eb0",
+    progress: "已读到 45%",
+    quickNote: "每翻几页就会被世界观的体积撞一下。",
+    mood: "🤯",
+    favorite: true,
+    addedAt: Date.parse("2026-04-11T11:30:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-anime-ghost",
+    title: "攻壳机动队",
+    type: "anime",
+    creator: "押井守",
+    year: "1995",
+    rating: 8.8,
+    dscore: "9.1",
+    tags: ["赛博朋克", "身份", "冷光", "意识流"],
+    status: "done",
+    cover: "https://picsum.photos/seed/shelter-ghost/420/620",
+    accentColor: "#6d8097",
+    quickNote: "冷得发亮，但里面其实是非常柔软的人类问题。",
+    mood: "🤔",
+    revisit: true,
+    rewatches: [{ date: "2026-03-09", note: "每次重看都更能理解它的沉默。" }],
+    addedAt: Date.parse("2026-04-09T16:10:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-movie-in-the-mood",
+    title: "花样年华",
+    type: "movie",
+    creator: "王家卫",
+    year: "2000",
+    rating: 9.3,
+    dscore: "8.8",
+    tags: ["克制", "留白", "走廊", "再看会更痛"],
+    status: "done",
+    cover: "https://picsum.photos/seed/shelter-moodlove/420/620",
+    accentColor: "#a86f60",
+    quickNote: "什么都没有说透，但什么都已经发生过了。",
+    mood: "🥹",
+    favorite: true,
+    quotes: ["如果多一张船票，你会不会跟我一起走？"],
+    addedAt: Date.parse("2026-04-08T10:06:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-doc-jiro",
+    title: "寿司之神",
+    type: "documentary",
+    creator: "David Gelb",
+    year: "2011",
+    rating: 8.2,
+    dscore: "8.7",
+    tags: ["手艺", "专注", "秩序"],
+    status: "done",
+    cover: "https://picsum.photos/seed/shelter-jiro/420/620",
+    accentColor: "#b08c65",
+    quickNote: "真正的重复并不机械，它会慢慢长出审美。",
+    mood: "😌",
+    addedAt: Date.parse("2026-04-06T08:20:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-book-sea",
+    title: "海边的卡夫卡",
+    type: "book",
+    creator: "村上春树",
+    year: "2002",
+    rating: 8.1,
+    dscore: "8.4",
+    tags: ["梦境", "少年逃亡", "平行入口"],
+    status: "want",
+    cover: "https://picsum.photos/seed/shelter-kafka/420/620",
+    accentColor: "#7d7666",
+    remind: "2026-04-26",
+    quickNote: "想留到某个适合下雨的夜里再开始。",
+    addedAt: Date.parse("2026-04-05T19:40:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-tv-bebop",
+    title: "星际牛仔",
+    type: "anime",
+    creator: "渡边信一郎",
+    year: "1998",
+    rating: 9.0,
+    dscore: "9.6",
+    tags: ["太空孤独", "爵士", "酷到伤心"],
+    status: "want",
+    cover: "https://picsum.photos/seed/shelter-bebop/420/620",
+    accentColor: "#8f6f56",
+    remind: "2026-05-02",
+    quickNote: "知道自己一定会喜欢，所以反而舍不得开始。",
+    addedAt: Date.parse("2026-04-04T15:00:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-movie-her",
+    title: "Her",
+    type: "movie",
+    creator: "Spike Jonze",
+    year: "2013",
+    rating: 8.6,
+    dscore: "8.4",
+    tags: ["城市孤独", "亲密关系", "未来温度"],
+    status: "done",
+    cover: "https://picsum.photos/seed/shelter-her/420/620",
+    accentColor: "#c28476",
+    quickNote: "暖色系的寂寞最容易钻进骨头里。",
+    mood: "😢",
+    addedAt: Date.parse("2026-04-03T18:40:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-book-kokoro",
+    title: "心",
+    type: "book",
+    creator: "夏目漱石",
+    year: "1914",
+    rating: 8.5,
+    dscore: "8.8",
+    tags: ["近代孤独", "告白", "日式阴影"],
+    status: "done",
+    cover: "https://picsum.photos/seed/shelter-kokoro/420/620",
+    accentColor: "#8d776a",
+    quickNote: "旧小说的锋利往往藏在最平静的句子里。",
+    mood: "🤔",
+    addedAt: Date.parse("2026-04-02T09:20:00Z"),
+    isMock: true
+  },
+  {
+    id: "mock-doc-cosmos",
+    title: "宇宙时空之旅",
+    type: "documentary",
+    creator: "Neil deGrasse Tyson",
+    year: "2014",
+    rating: 8.9,
+    dscore: "9.3",
+    tags: ["宇宙", "敬畏", "知识的温柔"],
+    status: "want",
+    cover: "https://picsum.photos/seed/shelter-cosmos/420/620",
+    accentColor: "#6d82a8",
+    remind: "2026-05-09",
+    quickNote: "想在脑袋比较干净的时候打开它。",
+    addedAt: Date.parse("2026-04-01T14:22:00Z"),
+    isMock: true
+  }
+].map((item) => ({
+  ...item,
+  isMock: true
+}));
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -41,24 +397,16 @@ function escapeHtml(value) {
 }
 
 function requestJson(url, options = {}) {
-  const headers = {
-    ...(options.headers || {})
-  };
-
+  const headers = { ...(options.headers || {}) };
   if (options.body) {
     headers["Content-Type"] = "application/json";
   }
 
-  return fetch(url, {
-    ...options,
-    headers
-  }).then(async (response) => {
+  return fetch(url, { ...options, headers }).then(async (response) => {
     const payload = await response.json().catch(() => ({}));
-
     if (!response.ok) {
       throw new Error(payload.error || "请求失败");
     }
-
     return payload;
   });
 }
@@ -69,13 +417,12 @@ function proxyCoverUrl(value) {
   }
 
   try {
-    const parsedUrl = new URL(String(value), window.location.origin);
-    if (parsedUrl.pathname === "/api/image-proxy") {
-      return parsedUrl.pathname + parsedUrl.search;
+    const parsed = new URL(String(value), window.location.origin);
+    if (parsed.pathname === "/api/image-proxy") {
+      return parsed.pathname + parsed.search;
     }
-
-    if (parsedUrl.hostname.endsWith("doubanio.com") || parsedUrl.hostname.endsWith("douban.com")) {
-      return `/api/image-proxy?url=${encodeURIComponent(parsedUrl.toString())}`;
+    if (parsed.hostname.endsWith("doubanio.com") || parsed.hostname.endsWith("douban.com")) {
+      return `/api/image-proxy?url=${encodeURIComponent(parsed.toString())}`;
     }
   } catch (error) {
     return String(value);
@@ -140,15 +487,12 @@ function mapStatusFromApi(status) {
   if (status === "progress") {
     return "progress";
   }
-
   if (status === "done") {
     return "done";
   }
-
   if (status === "paused") {
     return "drop";
   }
-
   return "want";
 }
 
@@ -156,41 +500,78 @@ function mapStatusToApi(status) {
   if (status === "progress") {
     return "progress";
   }
-
   if (status === "done") {
     return "done";
   }
-
   if (status === "drop") {
     return "paused";
   }
-
   return "pending";
 }
 
-function mapItemFromApi(item) {
+function createItemModel(raw) {
+  const quotes = parseQuotes(raw.quotes);
+  const rewatches = parseRewatches(raw.rewatches);
+  const tags = parseTags(raw.tags);
+  const rating = Number(raw.rating ?? raw.myScore ?? raw.my_rating ?? 0) || 0;
+  const quickNote = raw.quickNote ?? raw.quick_note ?? "";
+  const note = raw.note ?? "";
+
   return {
-    id: String(item.id),
+    id: String(raw.id),
+    type: raw.type || raw.category || "movie",
+    douban: raw.douban || raw.douban_url || "",
+    title: raw.title || "",
+    cover: proxyCoverUrl(raw.cover || raw.cover_url || ""),
+    creator: raw.creator || "",
+    year: raw.year ? String(raw.year) : "",
+    dscore: String(raw.dscore ?? raw.douban_rating ?? "").trim(),
+    status: raw.status || "want",
+    myScore: rating,
+    rating,
+    mood: raw.mood || "",
+    tags,
+    accentColor: raw.accentColor || "",
+    remind: raw.remind || raw.remind_date || "",
+    progress: raw.progress || "",
+    quickNote,
+    desc: raw.desc || raw.summary || "",
+    note,
+    quotes,
+    rewatches,
+    favorite: Boolean(raw.favorite),
+    revisit: Boolean(raw.revisit) || rewatches.length > 0,
+    notesCount: Number(raw.notesCount ?? 0) || (quickNote ? 1 : 0) + (note ? 1 : 0) + quotes.length,
+    addedAt: typeof raw.addedAt === "number"
+      ? raw.addedAt
+      : Date.parse(raw.addedAt || raw.created_at || "") || Date.now(),
+    isMock: Boolean(raw.isMock)
+  };
+}
+
+function mapItemFromApi(item) {
+  return createItemModel({
+    id: item.id,
     type: item.category || "movie",
     douban: item.douban_url || "",
     title: item.title || "",
-    cover: proxyCoverUrl(item.cover_url || ""),
+    cover: item.cover_url || "",
     creator: item.creator || "",
     year: item.year || "",
     dscore: item.douban_rating || "",
     status: mapStatusFromApi(item.status),
-    myScore: item.my_rating === null || item.my_rating === undefined ? 0 : Number(item.my_rating),
+    rating: item.my_rating,
     mood: item.mood || "",
-    tags: parseTags(item.tags),
+    tags: item.tags,
     remind: item.remind_date || "",
     progress: item.progress || "",
     quickNote: item.quick_note || "",
     desc: item.summary || "",
     note: item.note || "",
-    quotes: parseQuotes(item.quotes),
-    rewatches: parseRewatches(item.rewatches),
+    quotes: item.quotes || item.quotes_json,
+    rewatches: item.rewatches || item.rewatches_json,
     addedAt: Date.parse(item.created_at || "") || Date.now()
-  };
+  });
 }
 
 function buildApiPayloadFromItem(item) {
@@ -257,17 +638,14 @@ function tagColor(tag) {
 
 function statusLabel(status, type) {
   if (status === "want") {
-    return type === "book" ? "想读" : "想看";
+    return type === "book" ? "待读" : "待看";
   }
-
   if (status === "progress") {
     return type === "book" ? "正在读" : "正在看";
   }
-
   if (status === "done") {
     return type === "book" ? "已读" : "已看";
   }
-
   return "搁置";
 }
 
@@ -276,7 +654,7 @@ function itemPreviewText(item) {
 }
 
 function categoryEmoji(type) {
-  return CATEGORY_META[type]?.icon || "🎬";
+  return CATEGORY_META[type]?.icon || "🎞";
 }
 
 function categoryLabel(type) {
@@ -287,16 +665,193 @@ function formatScore(score) {
   if (!score) {
     return "";
   }
-
-  return Number.isInteger(score) ? String(score) : Number(score).toFixed(1);
+  return Number(score).toFixed(1).replace(/\.0$/, "");
 }
 
 function roundedScore(score) {
   return Math.max(0, Math.min(10, Math.round(Number(score) || 0)));
 }
 
+function formatRatingLabel(score) {
+  if (!score) {
+    return "";
+  }
+  return `⭐ ${formatScore(score)} / 10`;
+}
+
+function hexToRgb(hex) {
+  const clean = String(hex || "").replace("#", "").trim();
+  if (!clean) {
+    return null;
+  }
+
+  const full = clean.length === 3
+    ? clean.split("").map((chunk) => chunk + chunk).join("")
+    : clean;
+
+  if (!/^[0-9a-fA-F]{6}$/.test(full)) {
+    return null;
+  }
+
+  return {
+    r: parseInt(full.slice(0, 2), 16),
+    g: parseInt(full.slice(2, 4), 16),
+    b: parseInt(full.slice(4, 6), 16)
+  };
+}
+
+function rgbPair(rgb) {
+  if (!rgb) {
+    return {
+      base: DEFAULT_ACCENT,
+      rgb: "187, 176, 161",
+      deep: "113, 103, 92"
+    };
+  }
+
+  return {
+    rgb: `${rgb.r}, ${rgb.g}, ${rgb.b}`,
+    deep: `${Math.max(0, rgb.r - 58)}, ${Math.max(0, rgb.g - 58)}, ${Math.max(0, rgb.b - 58)}`
+  };
+}
+
+function getAccentFromItem(item) {
+  const accent = item.accentColor || CATEGORY_META[item.type]?.defaultAccent || DEFAULT_ACCENT;
+  return hexToRgb(accent);
+}
+
+function getRealItemById(id) {
+  return items.find((item) => item.id === String(id)) || null;
+}
+
+function getShelfItems() {
+  if (items.length >= MIN_SHOWCASE_ITEMS) {
+    return items;
+  }
+
+  const seen = new Set(items.map((item) => `${item.type}::${item.title}`.toLowerCase()));
+  const merged = [...items];
+
+  for (const showcase of SHOWCASE_ITEMS.map(createItemModel)) {
+    const key = `${showcase.type}::${showcase.title}`.toLowerCase();
+    if (!seen.has(key)) {
+      merged.push(showcase);
+      seen.add(key);
+    }
+    if (merged.length >= MIN_SHOWCASE_ITEMS) {
+      break;
+    }
+  }
+
+  return merged.sort((left, right) => right.addedAt - left.addedAt);
+}
+
+function syncAdvancedFiltersFromControls() {
+  advancedFilters.ratingMin = document.getElementById("filter-rating")?.value || "";
+  advancedFilters.tags = document.getElementById("filter-tags")?.value.trim() || "";
+  advancedFilters.year = document.getElementById("filter-year")?.value.trim() || "";
+  advancedFilters.type = document.getElementById("filter-type")?.value || "all";
+  advancedFilters.status = document.getElementById("filter-status")?.value || "all";
+}
+
+function hasAdvancedFilters() {
+  return Boolean(
+    advancedFilters.ratingMin
+    || advancedFilters.tags
+    || advancedFilters.year
+    || advancedFilters.type !== "all"
+    || advancedFilters.status !== "all"
+  );
+}
+
+function toggleAdvancedFilters(forceValue) {
+  advancedFiltersExpanded = typeof forceValue === "boolean" ? forceValue : !advancedFiltersExpanded;
+  const panel = document.getElementById("advanced-filters");
+  const button = document.getElementById("more-filters-btn");
+  if (panel) {
+    panel.hidden = !advancedFiltersExpanded;
+  }
+  if (button) {
+    button.textContent = advancedFiltersExpanded ? "Hide Filters" : "More Filters";
+  }
+}
+
+function clearAdvancedFilters() {
+  document.getElementById("filter-rating").value = "";
+  document.getElementById("filter-tags").value = "";
+  document.getElementById("filter-year").value = "";
+  document.getElementById("filter-type").value = "all";
+  document.getElementById("filter-status").value = "all";
+  syncAdvancedFiltersFromControls();
+  render();
+}
+
+function renderFilterPills() {
+  const container = document.getElementById("filter-pills");
+  if (!container) {
+    return;
+  }
+
+  const activeCategory = CATEGORY_META[currentNav]
+    ? currentNav
+    : (activePill.startsWith("type-") ? activePill.slice(5) : "all");
+
+  const pills = [
+    { key: "all", label: "全部" },
+    ...CATEGORY_FILTER_ORDER.map((category) => ({
+      key: category,
+      label: `${CATEGORY_META[category].icon} ${CATEGORY_META[category].label}`
+    }))
+  ];
+
+  container.innerHTML = pills
+    .map((pill) => `<button class="pill${activeCategory === pill.key ? " active" : ""}" onclick="setCategoryTab('${pill.key}')">${pill.label}</button>`)
+    .join("");
+}
+
+function buildFilterSummary(filteredItems, sourceItems) {
+  const parts = [];
+  if (CATEGORY_META[currentNav]) {
+    parts.push(`分类：${categoryLabel(currentNav)}`);
+  } else if (currentNav === "want") {
+    parts.push("状态：待看 / 待读");
+  } else if (currentNav === "progress") {
+    parts.push("状态：正在进行");
+  } else if (currentNav === "done") {
+    parts.push("状态：已完成");
+  }
+
+  if (hasAdvancedFilters()) {
+    if (advancedFilters.ratingMin) {
+      parts.push(`评分 ${advancedFilters.ratingMin}+`);
+    }
+    if (advancedFilters.tags) {
+      parts.push(`标签 ${advancedFilters.tags}`);
+    }
+    if (advancedFilters.year) {
+      parts.push(`年份 ${advancedFilters.year}`);
+    }
+    if (advancedFilters.type !== "all") {
+      parts.push(`类型 ${categoryLabel(advancedFilters.type)}`);
+    }
+    if (advancedFilters.status !== "all") {
+      parts.push(`状态 ${statusLabel(advancedFilters.status, advancedFilters.type === "book" ? "book" : "movie")}`);
+    }
+  }
+
+  const summary = document.getElementById("filter-summary");
+  if (summary) {
+    summary.textContent = parts.length > 0
+      ? `显示 ${filteredItems.length} / ${sourceItems.length} · ${parts.join(" · ")}`
+      : `显示 ${filteredItems.length} / ${sourceItems.length} 条藏品`;
+  }
+}
+
 function getFilteredItems() {
-  let filtered = [...items];
+  syncAdvancedFiltersFromControls();
+
+  const sourceItems = getShelfItems();
+  let filtered = [...sourceItems];
 
   if (CATEGORY_META[currentNav]) {
     filtered = filtered.filter((item) => item.type === currentNav);
@@ -306,11 +861,9 @@ function getFilteredItems() {
     filtered = filtered.filter((item) => item.status === "progress");
   } else if (currentNav === "done") {
     filtered = filtered.filter((item) => item.status === "done");
-  }
-
-  if (currentNav === "all") {
-    const activeCategory = activePill.startsWith("type-") ? activePill.slice(5) : "";
-    if (activeCategory && activeCategory !== "all" && CATEGORY_META[activeCategory]) {
+  } else if (currentNav === "all") {
+    const activeCategory = activePill.startsWith("type-") ? activePill.slice(5) : "all";
+    if (activeCategory !== "all" && CATEGORY_META[activeCategory]) {
       filtered = filtered.filter((item) => item.type === activeCategory);
     }
   }
@@ -321,12 +874,38 @@ function getFilteredItems() {
       item.title.toLowerCase().includes(searchValue)
       || item.creator.toLowerCase().includes(searchValue)
       || item.tags.some((tag) => tag.toLowerCase().includes(searchValue))
+      || item.quickNote.toLowerCase().includes(searchValue)
+      || item.note.toLowerCase().includes(searchValue)
     );
+  }
+
+  if (advancedFilters.ratingMin) {
+    const ratingThreshold = Number(advancedFilters.ratingMin) || 0;
+    filtered = filtered.filter((item) => Number(item.rating) >= ratingThreshold);
+  }
+
+  if (advancedFilters.tags) {
+    const tagQuery = advancedFilters.tags.toLowerCase();
+    filtered = filtered.filter((item) =>
+      item.tags.some((tag) => tag.toLowerCase().includes(tagQuery))
+    );
+  }
+
+  if (advancedFilters.year) {
+    filtered = filtered.filter((item) => String(item.year || "").includes(advancedFilters.year));
+  }
+
+  if (advancedFilters.type !== "all") {
+    filtered = filtered.filter((item) => item.type === advancedFilters.type);
+  }
+
+  if (advancedFilters.status !== "all") {
+    filtered = filtered.filter((item) => item.status === advancedFilters.status);
   }
 
   const sortValue = document.getElementById("sort-select")?.value || "date";
   if (sortValue === "score") {
-    filtered.sort((left, right) => (Number(right.myScore) || 0) - (Number(left.myScore) || 0));
+    filtered.sort((left, right) => (Number(right.rating) || 0) - (Number(left.rating) || 0));
   } else if (sortValue === "dscore") {
     filtered.sort((left, right) => (Number(right.dscore) || 0) - (Number(left.dscore) || 0));
   } else if (sortValue === "title") {
@@ -335,276 +914,337 @@ function getFilteredItems() {
     filtered.sort((left, right) => right.addedAt - left.addedAt);
   }
 
-  return filtered;
+  return {
+    filtered,
+    source: sourceItems
+  };
 }
 
-function renderFilterPills() {
-  const container = document.getElementById("filter-pills");
-  if (currentNav !== "all") {
-    container.innerHTML = "";
+function setCardAccent(card, rgb) {
+  const pair = rgbPair(rgb);
+  card.style.setProperty("--accent-rgb", pair.rgb);
+  card.style.setProperty("--accent-deep", pair.deep);
+}
+
+function updateAmbientBackground(filteredItems) {
+  const root = document.documentElement;
+  const primary = getAccentFromItem(filteredItems[0]) || hexToRgb(AMBIENT_FALLBACK[0]);
+  const secondary = getAccentFromItem(filteredItems[1]) || hexToRgb(AMBIENT_FALLBACK[1]);
+  const primaryPair = rgbPair(primary);
+  const secondaryPair = rgbPair(secondary);
+  root.style.setProperty("--ambient-rgb", primaryPair.rgb);
+  root.style.setProperty("--ambient-rgb-2", secondaryPair.rgb);
+}
+
+function applyFallbackAccents(filteredItems) {
+  document.querySelectorAll(".card").forEach((card, index) => {
+    setCardAccent(card, getAccentFromItem(filteredItems[index]));
+  });
+}
+
+function applyDynamicColors() {
+  if (typeof ColorThief === "undefined") {
     return;
   }
 
-  const pillItems = [
-    { key: "type-all", label: "全部" },
-    ...CATEGORY_FILTER_ORDER.map((category) => ({
-      key: `type-${category}`,
-      label: `${CATEGORY_META[category].icon} ${CATEGORY_META[category].label}`
-    }))
-  ];
+  const thief = new ColorThief();
+  let ambientApplied = false;
 
-  container.innerHTML = pillItems
-    .map((pill) => `<span class="pill${activePill === pill.key ? " active" : ""}" onclick="setPill('${pill.key}')">${pill.label}</span>`)
-    .join("");
+  document.querySelectorAll(".card img").forEach((img, index) => {
+    const apply = () => {
+      try {
+        const [r, g, b] = thief.getColor(img);
+        const card = img.closest(".card");
+        if (!card) {
+          return;
+        }
+
+        setCardAccent(card, { r, g, b });
+
+        if (!ambientApplied && index < 2) {
+          document.documentElement.style.setProperty("--ambient-rgb", `${r}, ${g}, ${b}`);
+          ambientApplied = true;
+        }
+      } catch (error) {
+        // Keep fallback accent colors when image extraction is not available.
+      }
+    };
+
+    if (img.complete && img.naturalWidth > 0) {
+      apply();
+    } else {
+      img.addEventListener("load", apply, { once: true });
+    }
+  });
+}
+
+function setViewMode(mode) {
+  viewMode = mode;
+  const container = document.getElementById("cards-grid");
+  if (container) {
+    container.className = mode === "list" ? "cards-list" : "cards-grid";
+  }
+
+  document.getElementById("view-grid-btn")?.classList.toggle("is-active", mode === "grid");
+  document.getElementById("view-list-btn")?.classList.toggle("is-active", mode === "list");
 }
 
 function renderSidebarStats() {
-  const doneItems = items.filter((item) => item.status === "done");
-  const wantItems = items.filter((item) => item.status === "want");
-  const progressItems = items.filter((item) => item.status === "progress");
-  const scoredItems = doneItems.filter((item) => Number(item.myScore) > 0);
+  const shelfItems = getShelfItems();
+  const doneItems = shelfItems.filter((item) => item.status === "done");
+  const wantItems = shelfItems.filter((item) => item.status === "want");
+  const progressItems = shelfItems.filter((item) => item.status === "progress");
+  const scoredItems = shelfItems.filter((item) => Number(item.rating) > 0);
   const averageScore = scoredItems.length > 0
-    ? (scoredItems.reduce((sum, item) => sum + Number(item.myScore || 0), 0) / scoredItems.length).toFixed(1)
-    : "-";
+    ? (scoredItems.reduce((sum, item) => sum + Number(item.rating || 0), 0) / scoredItems.length).toFixed(1)
+    : "—";
   const reminders = wantItems.filter((item) => item.remind).length;
+  const recentItems = [...shelfItems].sort((left, right) => right.addedAt - left.addedAt).slice(0, 3);
+
+  const currentlyHtml = progressItems.length > 0 ? `
+    <div class="mini-module">
+      <div class="sms-title">Currently Doing</div>
+      <div class="mini-list">
+        ${progressItems.slice(0, 3).map((item) => `
+          <div class="mini-item" onclick="openDetail('${item.id}')">
+            <span class="mini-item-icon">${categoryEmoji(item.type)}</span>
+            <div class="mini-item-copy">
+              <div class="mini-item-title">${escapeHtml(item.title)}</div>
+              <div class="mini-item-meta">${escapeHtml(item.progress || statusLabel(item.status, item.type))}</div>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  ` : "";
+
+  const recentHtml = recentItems.length > 0 ? `
+    <div class="mini-module">
+      <div class="sms-title">Recent Activity</div>
+      <div class="mini-list">
+        ${recentItems.map((item) => `
+          <div class="mini-item" onclick="openDetail('${item.id}')">
+            <span class="mini-item-icon">${categoryEmoji(item.type)}</span>
+            <div class="mini-item-copy">
+              <div class="mini-item-title">${escapeHtml(item.title)}</div>
+              <div class="mini-item-meta">${escapeHtml(item.quickNote || item.note || statusLabel(item.status, item.type))}</div>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  ` : "";
 
   document.getElementById("sidebar-mini-stats").innerHTML = `
-    <div class="sms-title">MY STATS</div>
-    <div class="sms-row"><span class="sms-label">全部</span><span class="sms-val">${items.length}</span></div>
-    <div class="sms-row"><span class="sms-label">已完成</span><span class="sms-val">${doneItems.length}</span></div>
-    <div class="sms-row"><span class="sms-label">待看/读</span><span class="sms-val">${wantItems.length}</span></div>
-    <div class="sms-row"><span class="sms-label">正在看/读</span><span class="sms-val">${progressItems.length}</span></div>
-    <div class="sms-row"><span class="sms-label">平均评分</span><span class="sms-val">${averageScore}</span></div>
-    ${reminders ? `<div class="sms-row"><span class="sms-label">🔔 提醒</span><span class="sms-val" style="color:var(--amber-t)">${reminders}</span></div>` : ""}
+    <div class="mini-module">
+      <div class="sms-title">My Stats</div>
+      <div class="sms-row"><span class="sms-label">藏品总数</span><span class="sms-val">${shelfItems.length}</span></div>
+      <div class="sms-row"><span class="sms-label">已完成</span><span class="sms-val">${doneItems.length}</span></div>
+      <div class="sms-row"><span class="sms-label">待看 / 待读</span><span class="sms-val">${wantItems.length}</span></div>
+      <div class="sms-row"><span class="sms-label">正在进行</span><span class="sms-val">${progressItems.length}</span></div>
+      <div class="sms-row"><span class="sms-label">平均评分</span><span class="sms-val">${averageScore}</span></div>
+      ${reminders ? `<div class="sms-row"><span class="sms-label">提醒事项</span><span class="sms-val">${reminders}</span></div>` : ""}
+    </div>
+    ${currentlyHtml}
+    ${recentHtml}
   `;
 }
 
 function renderCards() {
   const container = document.getElementById("cards-grid");
-  const filteredItems = getFilteredItems();
+  const { filtered, source } = getFilteredItems();
 
-  if (filteredItems.length === 0) {
+  renderFilterSummary(filtered, source);
+  updateAmbientBackground(filtered.length > 0 ? filtered : source);
+  setViewMode(viewMode);
+
+  if (filtered.length === 0) {
     container.innerHTML = `
       <div class="empty">
-        <div class="empty-icon">${CATEGORY_META[currentNav] ? categoryEmoji(currentNav) : "🎬"}</div>
-        <div class="empty-text">暂无记录</div>
-        <div class="empty-sub">点击右上角「新增」开始吧~</div>
+        <div class="empty-icon">${CATEGORY_META[currentNav] ? categoryEmoji(currentNav) : "⌂"}</div>
+        <div class="empty-text">这里暂时还没有东西</div>
+        <div class="empty-sub">换个筛选条件，或者从右上角开始添加第一条记录。</div>
       </div>
     `;
     return;
   }
 
-  container.innerHTML = filteredItems.map((item) => {
-    const tags = item.tags.slice(0, 3);
-    const scoreText = formatScore(item.myScore);
-    const rewatchCount = item.rewatches.length;
-    const previewText = itemPreviewText(item);
-    const remindText = item.remind && item.status === "want"
-      ? (isOverdue(item.remind) ? "⚠️ 已过期" : escapeHtml(item.remind))
-      : "";
+  container.innerHTML = filtered.map((item) => {
+    const tags = item.tags.slice(0, 4);
+    const preview = itemPreviewText(item);
+    const notesCount = item.notesCount > 0 ? `<span class="note-counter">${item.notesCount} notes</span>` : "";
+    const progress = item.progress ? `<span class="progress-chip">${escapeHtml(item.progress)}</span>` : "";
+    const revisit = item.revisit ? `<span class="rewatch-badge">↺ revisit</span>` : "";
+    const favorite = item.favorite ? `<span class="note-counter">♡ favourite</span>` : "";
+    const creatorRow = [item.creator, item.year].filter(Boolean).join(" · ");
 
     return `
-      <div class="card" onclick="openDetail('${item.id}')">
+      <article class="card${item.isMock ? " is-mock" : ""}" data-card-id="${item.id}" data-accent="${escapeHtml(item.accentColor || "")}" onclick="openDetail('${item.id}')">
         <div class="card-cover">
           ${item.cover
-            ? `<img src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" onerror="this.parentElement.innerHTML='<div class=&quot;cover-ph&quot;><div class=&quot;cover-ph-icon&quot;>${categoryEmoji(item.type)}</div><div class=&quot;cover-ph-title&quot;>${escapeHtml(item.title)}</div></div>'" />`
+            ? `<img src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" crossorigin="anonymous" onerror="this.parentElement.innerHTML='<div class=&quot;cover-ph&quot;><div class=&quot;cover-ph-icon&quot;>${categoryEmoji(item.type)}</div><div class=&quot;cover-ph-title&quot;>${escapeHtml(item.title)}</div></div>'" />`
             : `<div class="cover-ph"><div class="cover-ph-icon">${categoryEmoji(item.type)}</div><div class="cover-ph-title">${escapeHtml(item.title)}</div></div>`}
+          <span class="card-type-pill">${categoryEmoji(item.type)} ${categoryLabel(item.type)}</span>
           <span class="card-badge s-${item.status}">${statusLabel(item.status, item.type)}</span>
           ${item.mood ? `<span class="card-mood">${escapeHtml(item.mood)}</span>` : ""}
-          ${remindText ? `<span class="card-remind">${remindText}</span>` : ""}
         </div>
         <div class="card-body">
-          <div class="card-title">${escapeHtml(item.title)}</div>
-          <div class="card-meta">${escapeHtml([item.creator, item.year].filter(Boolean).join(" · ") || " ")}</div>
-          ${scoreText ? `<div class="card-score"><span class="stars-sm">${"★".repeat(roundedScore(item.myScore))}</span><span class="score-txt">${escapeHtml(scoreText)}/10</span></div>` : ""}
+          <div class="card-topline">
+            <span class="card-submeta">${escapeHtml(creatorRow || "创作者未知")}</span>
+            ${item.rating ? `<span class="card-score"><span class="score-txt">${formatRatingLabel(item.rating)}</span></span>` : ""}
+          </div>
+          <h3 class="card-title">${escapeHtml(item.title)}</h3>
+          ${item.dscore ? `<div class="card-meta">Douban ${escapeHtml(item.dscore)}</div>` : `<div class="card-meta"> </div>`}
           ${tags.length > 0 ? `<div class="card-tags">${tags.map((tag) => `<span class="tag ${tagColor(tag)}">${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
-          ${previewText ? `<div class="card-snippet">${escapeHtml(previewText)}</div>` : ""}
-          ${rewatchCount > 0 ? `<span class="rewatch-badge">🔁 看了 ${rewatchCount + 1} 遍</span>` : ""}
+          ${preview ? `<div class="card-snippet">${escapeHtml(preview)}</div>` : ""}
+          <div class="card-foot">
+            ${progress}
+            ${favorite}
+            ${revisit}
+            ${notesCount}
+          </div>
         </div>
-      </div>
+      </article>
     `;
   }).join("");
-}
 
-function renderTimeline() {
-  const container = document.getElementById("timeline-content");
-  const doneItems = items
-    .filter((item) => item.status === "done")
-    .sort((left, right) => right.addedAt - left.addedAt);
-  const remindItems = items
-    .filter((item) => item.status === "want" && item.remind)
-    .sort((left, right) => left.remind.localeCompare(right.remind));
-
-  if (doneItems.length === 0 && remindItems.length === 0) {
-    container.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">📅</div>
-        <div class="empty-text">暂无时间线记录</div>
-        <div class="empty-sub">已看/已读的内容会出现在这里</div>
-      </div>
-    `;
-    return;
-  }
-
-  const monthGroups = {};
-  doneItems.forEach((item) => {
-    const date = new Date(item.addedAt);
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    if (!monthGroups[key]) {
-      monthGroups[key] = [];
-    }
-    monthGroups[key].push(item);
-  });
-
-  let html = "";
-
-  if (remindItems.length > 0) {
-    html += `<div class="tl-year">即将观看</div><div class="tl-month-group"><div class="tl-month">提醒清单</div><div class="tl-items">`;
-    html += remindItems.map((item) => `
-      <div class="tl-item" onclick="openDetail('${item.id}')">
-        ${item.cover
-          ? `<img class="tl-item-cover" src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" onerror="this.outerHTML='<div class=&quot;tl-item-cover-ph&quot;>${categoryEmoji(item.type)}</div>'" />`
-          : `<div class="tl-item-cover-ph">${categoryEmoji(item.type)}</div>`}
-        <div class="tl-item-body">
-          <div class="tl-item-top">
-            <div>
-              <div class="tl-item-title">${escapeHtml(item.title)}</div>
-              <div class="tl-item-meta">${escapeHtml(item.remind)}${isOverdue(item.remind) ? ' · <span style="color:#991b1b">已过期</span>' : ""}</div>
-            </div>
-            <span class="card-badge s-want" style="font-size:10px;padding:2px 8px">${statusLabel(item.status, item.type)}</span>
-          </div>
-        </div>
-      </div>
-    `).join("");
-    html += `</div></div>`;
-  }
-
-  const years = [...new Set(Object.keys(monthGroups).map((key) => key.split("-")[0]))].sort((left, right) => Number(right) - Number(left));
-
-  years.forEach((year) => {
-    html += `<div class="tl-year">${year}</div>`;
-    const monthKeys = Object.keys(monthGroups)
-      .filter((key) => key.startsWith(year))
-      .sort((left, right) => right.localeCompare(left));
-
-    monthKeys.forEach((monthKey) => {
-      const month = monthKey.split("-")[1];
-      const monthItems = monthGroups[monthKey];
-
-      html += `<div class="tl-month-group"><div class="tl-month">${Number(month)}月 · ${monthItems.length} 条</div><div class="tl-items">`;
-      html += monthItems.map((item) => `
-        <div class="tl-item" onclick="openDetail('${item.id}')">
-          ${item.cover
-            ? `<img class="tl-item-cover" src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" onerror="this.outerHTML='<div class=&quot;tl-item-cover-ph&quot;>${categoryEmoji(item.type)}</div>'" />`
-            : `<div class="tl-item-cover-ph">${categoryEmoji(item.type)}</div>`}
-          <div class="tl-item-body">
-            <div class="tl-item-top">
-              <div>
-                <div class="tl-item-title">${escapeHtml(item.title)}</div>
-                <div class="tl-item-meta">${escapeHtml([item.creator, item.year].filter(Boolean).join(" · "))}</div>
-              </div>
-              <span class="tl-item-mood">${escapeHtml(item.mood || "")}</span>
-            </div>
-            ${item.myScore ? `<div class="card-score" style="margin-top:4px"><span class="stars-sm">${"★".repeat(roundedScore(item.myScore))}</span><span class="score-txt">${escapeHtml(formatScore(item.myScore))}/10</span></div>` : ""}
-            ${itemPreviewText(item) ? `<div class="tl-item-note">${escapeHtml(itemPreviewText(item))}</div>` : ""}
-          </div>
-        </div>
-      `).join("");
-      html += `</div></div>`;
-    });
-  });
-
-  container.innerHTML = html;
+  applyFallbackAccents(filtered);
+  applyDynamicColors();
 }
 
 function renderStats() {
   const container = document.getElementById("stats-content");
-  const doneItems = items.filter((item) => item.status === "done");
-  const categoryRows = CATEGORY_FILTER_ORDER.map((category) => ({
-    category,
-    count: items.filter((item) => item.type === category).length
-  }));
-  const scoredItems = doneItems.filter((item) => Number(item.myScore) > 0);
+  const shelfItems = getShelfItems();
+  const doneItems = shelfItems.filter((item) => item.status === "done");
+  const scoredItems = shelfItems.filter((item) => Number(item.rating) > 0);
   const averageScore = scoredItems.length > 0
-    ? (scoredItems.reduce((sum, item) => sum + Number(item.myScore || 0), 0) / scoredItems.length).toFixed(1)
-    : "-";
+    ? (scoredItems.reduce((sum, item) => sum + Number(item.rating || 0), 0) / scoredItems.length).toFixed(1)
+    : "—";
   const currentYear = String(new Date().getFullYear());
   const finishedThisYear = doneItems.filter((item) => String(new Date(item.addedAt).getFullYear()) === currentYear).length;
+  const categoryRows = CATEGORY_FILTER_ORDER.map((category, index) => ({
+    category,
+    count: shelfItems.filter((item) => item.type === category).length,
+    color: ["#8b705c", "#6f7d97", "#8f7ba8", "#7a9076", "#b18d68"][index]
+  }));
 
   const tagCounts = {};
-  items.forEach((item) => {
+  shelfItems.forEach((item) => {
     item.tags.forEach((tag) => {
       tagCounts[tag] = (tagCounts[tag] || 0) + 1;
     });
   });
+
   const topTags = Object.entries(tagCounts).sort((left, right) => right[1] - left[1]).slice(0, 6);
   const maxTagCount = topTags[0]?.[1] || 1;
 
   const scoreDistribution = Array(10).fill(0);
   scoredItems.forEach((item) => {
-    scoreDistribution[Math.max(0, Math.min(9, roundedScore(item.myScore) - 1))] += 1;
+    scoreDistribution[Math.max(0, Math.min(9, roundedScore(item.rating) - 1))] += 1;
   });
   const maxScoreCount = Math.max(...scoreDistribution, 0) || 1;
 
   const topScored = [...doneItems]
-    .filter((item) => Number(item.myScore) > 0)
-    .sort((left, right) => Number(right.myScore) - Number(left.myScore))
+    .filter((item) => Number(item.rating) > 0)
+    .sort((left, right) => Number(right.rating) - Number(left.rating))
     .slice(0, 5);
 
   const moodCounts = {};
-  items.filter((item) => item.mood).forEach((item) => {
+  shelfItems.filter((item) => item.mood).forEach((item) => {
     moodCounts[item.mood] = (moodCounts[item.mood] || 0) + 1;
   });
   const topMoods = Object.entries(moodCounts).sort((left, right) => right[1] - left[1]).slice(0, 5);
 
-  const quotes = items.flatMap((item) => item.quotes.map((quote) => ({ quote, title: item.title })));
+  const quotes = shelfItems.flatMap((item) => item.quotes.map((quote) => ({ quote, title: item.title })));
 
   container.innerHTML = `
     <div class="stats-grid">
-      <div class="stat-box"><div class="stat-num">${items.length}</div><div class="stat-label">总条目</div></div>
+      <div class="stat-box"><div class="stat-num">${shelfItems.length}</div><div class="stat-label">总条目</div></div>
       <div class="stat-box"><div class="stat-num">${doneItems.length}</div><div class="stat-label">已完成</div></div>
       <div class="stat-box"><div class="stat-num">${averageScore}</div><div class="stat-label">平均评分</div></div>
-      <div class="stat-box"><div class="stat-num">${finishedThisYear}</div><div class="stat-label">${currentYear}年完成</div></div>
+      <div class="stat-box"><div class="stat-num">${finishedThisYear}</div><div class="stat-label">${currentYear} 年完成</div></div>
     </div>
-    <div class="stats-2col" style="margin-bottom:12px">
+    <div class="stats-2col">
       <div class="stats-box">
-        <h3>类型分布</h3>
-        ${categoryRows.map(({ category, count }, index) => `<div class="bar-row"><span class="bar-label">${escapeHtml(categoryLabel(category))}</span><div class="bar-track"><div class="bar-fill" style="width:${items.length ? (count / items.length) * 100 : 0}%;background:${["#1f2937","#2563eb","#7c3aed","#d97706","#059669"][index] || "#1f2937"}"></div></div><span class="bar-val">${count}</span></div>`).join("")}
+        <h3>分类分布</h3>
+        ${categoryRows.map(({ category, count, color }) => `
+          <div class="bar-row">
+            <span class="bar-label">${escapeHtml(categoryLabel(category))}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${shelfItems.length ? (count / shelfItems.length) * 100 : 0}%;background:${color}"></div></div>
+            <span class="bar-val">${count}</span>
+          </div>
+        `).join("")}
       </div>
       <div class="stats-box">
-        <h3>观看心情 Top 5</h3>
+        <h3>心情 Top 5</h3>
         ${topMoods.length > 0
-          ? topMoods.map(([emoji, count]) => `<div class="mood-stat-row"><span class="mood-stat-emoji">${escapeHtml(emoji)}</span><div class="bar-track"><div class="bar-fill" style="width:${(count / (topMoods[0]?.[1] || 1)) * 100}%;background:#7c3aed"></div></div><span class="bar-val">${count}</span></div>`).join("")
-          : '<div style="font-size:13px;color:var(--ink4)">还没有心情记录</div>'}
+          ? topMoods.map(([emoji, count]) => `
+              <div class="mood-stat-row">
+                <span class="bar-label">${escapeHtml(emoji)}</span>
+                <div class="bar-track"><div class="bar-fill" style="width:${(count / (topMoods[0]?.[1] || 1)) * 100}%;background:#8d7fb5"></div></div>
+                <span class="bar-val">${count}</span>
+              </div>
+            `).join("")
+          : '<div class="empty-sub">还没有心情记录。</div>'}
       </div>
     </div>
-    <div class="stats-2col" style="margin-bottom:12px">
+    <div class="stats-2col">
       <div class="stats-box">
-        <h3>⭐ 评分分布</h3>
-        ${scoreDistribution.map((count, index) => `<div class="bar-row"><span class="bar-label">${index + 1}分</span><div class="bar-track"><div class="bar-fill" style="width:${(count / maxScoreCount) * 100}%;background:#f59e0b"></div></div><span class="bar-val">${count}</span></div>`).join("")}
+        <h3>评分分布</h3>
+        ${scoreDistribution.map((count, index) => `
+          <div class="bar-row">
+            <span class="bar-label">${index + 1} 分</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${(count / maxScoreCount) * 100}%;background:#d99b28"></div></div>
+            <span class="bar-val">${count}</span>
+          </div>
+        `).join("")}
       </div>
       <div class="stats-box">
-        <h3>🏆 评分最高</h3>
-        <div>
-          ${topScored.length > 0
-            ? topScored.map((item, index) => `<div class="top-item"><div class="top-rank${index < 3 ? ` r${index + 1}` : ""}">${index + 1}</div><div class="top-info"><div class="top-title">${escapeHtml(item.title)}</div><div class="top-meta">${escapeHtml(item.creator || "")}</div></div><div class="top-score">${escapeHtml(formatScore(item.myScore))}</div></div>`).join("")
-            : '<div style="font-size:13px;color:var(--ink4)">还没有评分</div>'}
-        </div>
+        <h3>评分最高</h3>
+        ${topScored.length > 0
+          ? topScored.map((item, index) => `
+              <div class="top-item">
+                <div class="top-rank${index < 3 ? ` r${index + 1}` : ""}">${index + 1}</div>
+                <div class="top-info">
+                  <div class="top-title">${escapeHtml(item.title)}</div>
+                  <div class="top-meta">${escapeHtml([item.creator, item.year].filter(Boolean).join(" · "))}</div>
+                </div>
+                <div class="top-score">${escapeHtml(formatScore(item.rating))}</div>
+              </div>
+            `).join("")
+          : '<div class="empty-sub">还没有评分记录。</div>'}
       </div>
     </div>
-    <div class="stats-box" style="margin-bottom:12px">
-      <h3>🔖 常用标签</h3>
+    <div class="stats-box">
+      <h3>常用标签</h3>
       ${topTags.length > 0
-        ? topTags.map(([tag, count]) => `<div class="bar-row"><span class="bar-label" style="width:56px;font-size:11px">${escapeHtml(tag)}</span><div class="bar-track"><div class="bar-fill" style="width:${(count / maxTagCount) * 100}%;background:#5b21b6"></div></div><span class="bar-val">${count}</span></div>`).join("")
-        : '<div style="font-size:13px;color:var(--ink4)">还没有标签</div>'}
+        ? topTags.map(([tag, count]) => `
+            <div class="bar-row">
+              <span class="bar-label">${escapeHtml(tag)}</span>
+              <div class="bar-track"><div class="bar-fill" style="width:${(count / maxTagCount) * 100}%;background:#7a70a0"></div></div>
+              <span class="bar-val">${count}</span>
+            </div>
+          `).join("")
+        : '<div class="empty-sub">还没有标签。</div>'}
     </div>
-    ${quotes.length > 0 ? `<div class="stats-box"><h3>💬 金句摘录（${quotes.length} 条）</h3>${quotes.slice(0, 5).map(({ quote, title }) => `<div class="quote-item"><div class="quote-text">"${escapeHtml(quote)}"</div><div style="font-size:11px;color:var(--ink4);margin-top:4px">— ${escapeHtml(title)}</div></div>`).join("")}</div>` : ""}
+    ${quotes.length > 0 ? `
+      <div class="stats-box">
+        <h3>最近留住的句子</h3>
+        ${quotes.slice(0, 5).map(({ quote, title }) => `
+          <div class="quote-item">
+            <div class="quote-text">“${escapeHtml(quote)}”</div>
+            <div class="top-meta">— ${escapeHtml(title)}</div>
+          </div>
+        `).join("")}
+      </div>
+    ` : ""}
   `;
 }
 
 function renderQuotesPage() {
   const container = document.getElementById("quotes-content");
-  const quoteItems = items
+  const shelfItems = getShelfItems();
+  const quoteItems = shelfItems
     .filter((item) => item.quotes.length > 0)
     .sort((left, right) => left.title.localeCompare(right.title, "zh-CN"));
 
@@ -629,8 +1269,8 @@ function renderQuotesPage() {
     <div class="view-shell">
       <div class="view-head">
         <div>
-          <h3>摘录下来的句子</h3>
-          <p>把那些想留下来的台词、段落和一句话都单独放在这里，也可以按作品慢慢筛。</p>
+          <h3>被某句话击中的瞬间</h3>
+          <p>把那些舍不得滑过去的句子留在这里。它们可能比剧情更晚散去。</p>
         </div>
         <select class="sort-select" onchange="setQuoteWorkFilter(this.value)">
           <option value="all"${quoteWorkFilter === "all" ? " selected" : ""}>全部作品</option>
@@ -647,13 +1287,13 @@ function renderQuotesPage() {
               </div>
             `).join("")}
           </div>`
-        : `<div class="empty"><div class="empty-icon">💬</div><div class="empty-text">还没有摘录</div><div class="empty-sub">在详情页记下一句喜欢的话，它就会出现在这里。</div></div>`}
+        : `<div class="empty"><div class="empty-icon">❞</div><div class="empty-text">还没有摘录</div><div class="empty-sub">在详情页记下一句喜欢的话，它就会出现在这里。</div></div>`}
     </div>
   `;
 }
 
 function formatCalendarMonth(date) {
-  return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
+  return `${date.getFullYear()} 年 ${date.getMonth() + 1} 月`;
 }
 
 function renderMoodCalendar() {
@@ -663,11 +1303,11 @@ function renderMoodCalendar() {
   const startWeekday = (monthStart.getDay() + 6) % 7;
   const daysInMonth = monthEnd.getDate();
   const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
-  const weekdayLabels = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+  const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const todayDate = new Date();
   const itemMap = new Map();
 
-  items.forEach((item) => {
+  getShelfItems().forEach((item) => {
     const date = new Date(item.addedAt);
     if (Number.isNaN(date.getTime())) {
       return;
@@ -684,8 +1324,9 @@ function renderMoodCalendar() {
   for (let index = 0; index < totalCells; index += 1) {
     const dayNumber = index - startWeekday + 1;
     const inMonth = dayNumber >= 1 && dayNumber <= daysInMonth;
+
     if (!inMonth) {
-      cellsHtml += `<div class="calendar-day muted"></div>`;
+      cellsHtml += '<div class="calendar-day muted"></div>';
       continue;
     }
 
@@ -705,15 +1346,15 @@ function renderMoodCalendar() {
         ${dayItems.length > 0
           ? dayItems.slice(0, 3).map((item) => `
               <div class="calendar-entry" onclick="openDetail('${item.id}')">
-                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.55rem">
                   <div class="calendar-entry-title">${escapeHtml(item.title)}</div>
                   <span class="calendar-entry-mood">${escapeHtml(item.mood || "·")}</span>
                 </div>
                 ${itemPreviewText(item) ? `<div class="calendar-entry-note">${escapeHtml(itemPreviewText(item))}</div>` : ""}
               </div>
             `).join("")
-          : '<div class="calendar-empty">这一天没有留下记录</div>'}
-        ${dayItems.length > 3 ? `<div class="calendar-empty">+${dayItems.length - 3} 条更多记录</div>` : ""}
+          : '<div class="calendar-empty">这一天还没有留下痕迹。</div>'}
+        ${dayItems.length > 3 ? `<div class="calendar-empty">+${dayItems.length - 3} more</div>` : ""}
       </div>
     `;
   }
@@ -722,12 +1363,12 @@ function renderMoodCalendar() {
     <div class="view-shell">
       <div class="view-head">
         <div>
-          <h3>把那些日子重新翻开</h3>
-          <p>按记录创建日期整理，看看那天看了什么、当时是什么心情，像一本慢慢长出来的私人日历。</p>
+          <h3>What it did to me</h3>
+          <p>按创建日期摊开一页私人日历，看看那天的作品、心情和一句没来得及整理的碎碎念。</p>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;gap:0.55rem;align-items:center;flex-wrap:wrap">
           <button class="btn btn-outline btn-sm" onclick="shiftCalendarMonth(-1)">← 上个月</button>
-          <span style="font-size:13px;color:var(--ink2)">${formatCalendarMonth(calendarCursor)}</span>
+          <span class="filter-summary">${formatCalendarMonth(calendarCursor)}</span>
           <button class="btn btn-outline btn-sm" onclick="shiftCalendarMonth(1)">下个月 →</button>
           <button class="btn btn-ghost btn-sm" onclick="jumpCalendarToday()">回到本月</button>
         </div>
@@ -748,34 +1389,106 @@ function renderAboutPage() {
       <div class="view-head">
         <div>
           <h3>All About Me</h3>
-          <p>About this place / 您找到了一个很好的藏身之处</p>
+          <p>一个不太会直接说“我喜欢什么”的人，留给自己的旁白。</p>
         </div>
       </div>
       <div class="about-story">
         <div class="about-card">
-          <p>我不太会跟人说我喜欢什么，所以建了这个地方。</p>
+          <h3>左边</h3>
+          <p>我不太会跟人说我喜欢什么，所以建了这个地方。它不像社交主页，也不像公开片单，更像一间慢慢堆满纸张、封面、句子和心情的门房。</p>
         </div>
         <div class="about-card">
-          <p>某天看了《刺猬的优雅》，荻里对荷妮说——您找到了一个很好的藏身之处。My Little shelter只是一个藏身之处，就像荷妮的那间门房。</p>
+          <h3>右边</h3>
+          <p>某天看了《刺猬的优雅》，荻里对荷妮说——您找到了一个很好的藏身之处。My Little Shelter 只是一个藏身之处，就像荷妮的那间门房。</p>
         </div>
       </div>
     </div>
   `;
 }
 
-function setQuoteWorkFilter(value) {
-  quoteWorkFilter = value || "all";
-  renderQuotesPage();
-}
+function renderTimeline() {
+  const container = document.getElementById("timeline-content");
+  const shelfItems = getShelfItems();
+  const doneItems = shelfItems.filter((item) => item.status === "done").sort((left, right) => right.addedAt - left.addedAt);
+  const remindItems = shelfItems.filter((item) => item.status === "want" && item.remind).sort((left, right) => left.remind.localeCompare(right.remind));
 
-function shiftCalendarMonth(delta) {
-  calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + delta, 1);
-  renderMoodCalendar();
-}
+  if (doneItems.length === 0 && remindItems.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">⋯</div>
+        <div class="empty-text">时间线还很安静</div>
+        <div class="empty-sub">你看过、读过、停留过的东西，会慢慢在这里排成一条路。</div>
+      </div>
+    `;
+    return;
+  }
 
-function jumpCalendarToday() {
-  calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  renderMoodCalendar();
+  const monthGroups = {};
+  doneItems.forEach((item) => {
+    const date = new Date(item.addedAt);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    if (!monthGroups[key]) {
+      monthGroups[key] = [];
+    }
+    monthGroups[key].push(item);
+  });
+
+  let html = "";
+
+  if (remindItems.length > 0) {
+    html += '<div class="tl-year">等待中的东西</div><div class="tl-month-group"><div class="tl-month">提醒清单</div><div class="tl-items">';
+    html += remindItems.map((item) => `
+      <div class="tl-item" onclick="openDetail('${item.id}')">
+        ${item.cover
+          ? `<img class="tl-item-cover" src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" onerror="this.outerHTML='<div class=&quot;tl-item-cover-ph&quot;>${categoryEmoji(item.type)}</div>'" />`
+          : `<div class="tl-item-cover-ph">${categoryEmoji(item.type)}</div>`}
+        <div class="tl-item-body">
+          <div class="tl-item-top">
+            <div>
+              <div class="tl-item-title">${escapeHtml(item.title)}</div>
+              <div class="tl-item-meta">${escapeHtml(item.remind)}${isOverdue(item.remind) ? " · 已过期" : ""}</div>
+            </div>
+            <span class="card-badge s-want" style="position:static">${statusLabel(item.status, item.type)}</span>
+          </div>
+        </div>
+      </div>
+    `).join("");
+    html += "</div></div>";
+  }
+
+  const years = [...new Set(Object.keys(monthGroups).map((key) => key.split("-")[0]))].sort((left, right) => Number(right) - Number(left));
+  years.forEach((year) => {
+    html += `<div class="tl-year">${year}</div>`;
+    const monthKeys = Object.keys(monthGroups).filter((key) => key.startsWith(year)).sort((left, right) => right.localeCompare(left));
+
+    monthKeys.forEach((monthKey) => {
+      const month = monthKey.split("-")[1];
+      const monthItems = monthGroups[monthKey];
+
+      html += `<div class="tl-month-group"><div class="tl-month">${Number(month)} 月 · ${monthItems.length} 条</div><div class="tl-items">`;
+      html += monthItems.map((item) => `
+        <div class="tl-item" onclick="openDetail('${item.id}')">
+          ${item.cover
+            ? `<img class="tl-item-cover" src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" onerror="this.outerHTML='<div class=&quot;tl-item-cover-ph&quot;>${categoryEmoji(item.type)}</div>'" />`
+            : `<div class="tl-item-cover-ph">${categoryEmoji(item.type)}</div>`}
+          <div class="tl-item-body">
+            <div class="tl-item-top">
+              <div>
+                <div class="tl-item-title">${escapeHtml(item.title)}</div>
+                <div class="tl-item-meta">${escapeHtml([item.creator, item.year].filter(Boolean).join(" · "))}</div>
+              </div>
+              <span class="tl-item-mood">${escapeHtml(item.mood || "")}</span>
+            </div>
+            ${item.rating ? `<div class="card-meta" style="margin-top:0.3rem">${formatRatingLabel(item.rating)}</div>` : ""}
+            ${itemPreviewText(item) ? `<div class="tl-item-note">${escapeHtml(itemPreviewText(item))}</div>` : ""}
+          </div>
+        </div>
+      `).join("");
+      html += "</div></div>";
+    });
+  });
+
+  container.innerHTML = html;
 }
 
 function setVisibleView(viewId) {
@@ -832,49 +1545,36 @@ function render() {
 
 function setPill(key) {
   activePill = key;
-  render();
+  currentNav = "all";
+  renderActiveView();
+}
+
+function setCategoryTab(category) {
+  activePill = `type-${category}`;
+  if (category === "all") {
+    setNav("all");
+    return;
+  }
+  setNav(category);
 }
 
 function setNav(nav) {
   currentNav = nav;
+
+  if (nav === "all") {
+    activePill = "type-all";
+  } else if (CATEGORY_META[nav]) {
+    activePill = `type-${nav}`;
+  } else {
+    activePill = "type-all";
+  }
+
   document.querySelectorAll(".nav-item").forEach((button) => button.classList.remove("active"));
   document.getElementById(`nav-${nav}`)?.classList.add("active");
 
-  const titles = {
-    all: "Vous avez trouvé un très bon refuge",
-    movie: "Slightly off",
-    tv: "Episode After Episode",
-    anime: "Elsewhere",
-    documentary: "Observed",
-    book: "underlined",
-    want: "Just...Not yet",
-    progress: "In Progress",
-    done: "Collected",
-    timeline: "原来那时候我在看这个",
-    quotes: "Quoted",
-    calendar: "WhatIt Did To Me？",
-    stats: "小小的，我的",
-    about: "About this place"
-  };
-  const subtitles = {
-    all: "您找到了一个很好的藏身之处",
-    movie: "现实轻微变形的两小时",
-    tv: "怎么一集接一集的停不下来？",
-    anime: "现实的物理规则在这里不适用，感谢",
-    documentary: "所有的真实都值得被目击一次",
-    book: "阅读过的字会留在我身体里，像某个血小板",
-    want: "还没到那个晚上",
-    progress: "还没结束，所以还不知道它会对我做什么",
-    done: "这些构成了我理解世界的方式",
-    timeline: "",
-    quotes: "被某句话击中的瞬间，想留住它",
-    calendar: "它对我做了一些我无法描述的事",
-    stats: "",
-    about: "您找到了一个很好的藏身之处"
-  };
-
-  document.getElementById("page-title").textContent = titles[nav] || "全部记录";
-  document.getElementById("page-sub").textContent = subtitles[nav] || "";
+  const copy = PAGE_COPY[nav] || PAGE_COPY.all;
+  document.getElementById("page-title").textContent = copy.title;
+  document.getElementById("page-sub").textContent = copy.subtitle;
   renderActiveView();
 }
 
@@ -906,9 +1606,8 @@ function selectMood(emoji) {
 
 function updateFormFields() {
   const status = document.getElementById("f-status").value;
-  const type = document.getElementById("f-type").value;
   document.getElementById("remind-field").style.display = status === "want" ? "flex" : "none";
-  document.getElementById("progress-field").style.display = type === "book" && status !== "want" ? "flex" : "none";
+  document.getElementById("progress-field").style.display = status === "progress" ? "flex" : "none";
 }
 
 function resetForm() {
@@ -940,8 +1639,38 @@ function openAdd() {
   document.getElementById("modal-add").classList.add("open");
 }
 
+function startNewFromItem(id) {
+  const item = getShelfItems().find((entry) => entry.id === String(id));
+  if (!item) {
+    openAdd();
+    return;
+  }
+
+  resetForm();
+  document.getElementById("f-douban").value = item.douban || "";
+  document.getElementById("f-title").value = item.title || "";
+  document.getElementById("f-cover").value = item.cover || "";
+  document.getElementById("f-creator").value = item.creator || "";
+  document.getElementById("f-year").value = item.year || "";
+  document.getElementById("f-dscore").value = item.dscore || "";
+  document.getElementById("f-type").value = item.type || "movie";
+  document.getElementById("f-status").value = item.status === "done" ? "done" : "want";
+  document.getElementById("f-tags").value = item.tags.join(", ");
+  document.getElementById("f-remind").value = item.remind || "";
+  document.getElementById("f-progress").value = item.progress || "";
+  document.getElementById("f-desc").value = item.desc || "";
+  document.getElementById("f-quick-note").value = item.quickNote || "";
+  document.getElementById("f-note").value = item.note || "";
+  myScore = item.rating || 0;
+  myMood = item.mood || "";
+  renderStarPicker(myScore);
+  renderMoodPicker(myMood);
+  updateFormFields();
+  document.getElementById("modal-add").classList.add("open");
+}
+
 function openEdit(id) {
-  const item = items.find((entry) => entry.id === String(id));
+  const item = getRealItemById(id);
   if (!item) {
     return;
   }
@@ -994,7 +1723,6 @@ async function fetchDouban() {
 
   try {
     const data = await requestJson(`/api/fetch-douban?url=${encodeURIComponent(url)}`);
-
     document.getElementById("f-douban").value = data.douban_url || data.source_url || url;
     document.getElementById("f-title").value = data.title || document.getElementById("f-title").value;
     document.getElementById("f-cover").value = data.cover_url || document.getElementById("f-cover").value;
@@ -1006,13 +1734,12 @@ async function fetchDouban() {
     if (data.category) {
       document.getElementById("f-type").value = data.category;
     }
-
     if (Array.isArray(data.tags) && data.tags.length > 0) {
       document.getElementById("f-tags").value = data.tags.join(", ");
     }
 
     updateFormFields();
-    hint.textContent = "✓ 填充完成，请检查后再保存";
+    hint.textContent = "已填充，请检查后保存。";
     hint.className = "dhint ok";
   } catch (error) {
     hint.textContent = error.message || "自动填充失败，请稍后再试";
@@ -1024,6 +1751,10 @@ async function fetchDouban() {
 }
 
 async function persistExistingItem(item) {
+  if (item.isMock || !getRealItemById(item.id)) {
+    throw new Error("展示样本不能直接保存，请先新增到自己的收藏。");
+  }
+
   const payload = buildApiPayloadFromItem(item);
   const result = await requestJson(`/api/items/${item.id}`, {
     method: "PUT",
@@ -1033,11 +1764,11 @@ async function persistExistingItem(item) {
 }
 
 function replaceLocalItem(item) {
-  items = items.map((entry) => entry.id === item.id ? item : entry);
+  items = items.map((entry) => (entry.id === item.id ? item : entry));
 }
 
 async function saveItem() {
-  const existingItem = editId ? items.find((item) => item.id === editId) : null;
+  const existingItem = editId ? getRealItemById(editId) : null;
   const payload = buildApiPayloadFromForm(existingItem);
 
   if (!payload.title) {
@@ -1073,51 +1804,69 @@ async function saveItem() {
 }
 
 function openDetail(id) {
-  const item = items.find((entry) => entry.id === String(id));
+  const item = getShelfItems().find((entry) => entry.id === String(id));
   if (!item) {
     return;
   }
 
-  const tagsHtml = item.tags
-    .map((tag) => `<span class="tag ${tagColor(tag)}" style="font-size:12px;padding:3px 10px">${escapeHtml(tag)}</span>`)
-    .join("");
+  const editable = !item.isMock && Boolean(getRealItemById(id));
+  const tagsHtml = item.tags.map((tag) => `<span class="tag ${tagColor(tag)}" style="font-size:12px;padding:4px 10px">${escapeHtml(tag)}</span>`).join("");
   const quotesHtml = item.quotes.length > 0
-    ? item.quotes.map((quote, index) => `<div class="quote-item"><div class="quote-text">"${escapeHtml(quote)}"</div><button class="quote-del" onclick="delQuote('${item.id}',${index})">✕</button></div>`).join("")
-    : '<div style="font-size:13px;color:var(--ink4)">还没有摘录</div>';
+    ? item.quotes.map((quote, index) => `
+        <div class="quote-item">
+          <div class="quote-text">“${escapeHtml(quote)}”</div>
+          ${editable ? `<button class="quote-del" onclick="delQuote('${item.id}', ${index})">✕</button>` : ""}
+        </div>
+      `).join("")
+    : '<div class="empty-sub">还没有摘录。</div>';
   const rewatchesHtml = item.rewatches.length > 0
-    ? item.rewatches.map((rewatch) => `<div class="rewatch-item"><div class="rewatch-date">${escapeHtml(rewatch.date || "")}</div><div class="rewatch-note">${escapeHtml(rewatch.note || "（无笔记）")}</div></div>`).join("")
-    : '<div style="font-size:13px;color:var(--ink4)">还没有重看记录</div>';
+    ? item.rewatches.map((rewatch) => `
+        <div class="rewatch-item">
+          <div class="rewatch-date">${escapeHtml(rewatch.date || "")}</div>
+          <div class="rewatch-note">${escapeHtml(rewatch.note || "（无笔记）")}</div>
+        </div>
+      `).join("")
+    : '<div class="empty-sub">还没有重看记录。</div>';
 
   document.getElementById("panel-content").innerHTML = `
     ${item.cover
       ? `<img class="panel-cover" src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" onerror="this.outerHTML='<div class=&quot;panel-cover-ph&quot;>${categoryEmoji(item.type)}</div>'" />`
       : `<div class="panel-cover-ph">${categoryEmoji(item.type)}</div>`}
-    <div class="panel-title">${escapeHtml(item.title)}${item.mood ? ` <span style="font-size:20px">${escapeHtml(item.mood)}</span>` : ""}</div>
+    <div class="panel-title">${escapeHtml(item.title)}${item.mood ? ` <span style="font-size:1.2rem">${escapeHtml(item.mood)}</span>` : ""}</div>
     <div class="panel-meta">
+      <span class="meta-pill">${escapeHtml(categoryLabel(item.type))}</span>
       ${item.creator ? `<span class="meta-pill">${escapeHtml(item.creator)}</span>` : ""}
       ${item.year ? `<span class="meta-pill">${escapeHtml(item.year)}</span>` : ""}
-      ${item.dscore ? `<span class="meta-pill">豆瓣 ${escapeHtml(item.dscore)}</span>` : ""}
+      ${item.dscore ? `<span class="meta-pill">Douban ${escapeHtml(item.dscore)}</span>` : ""}
       <span class="meta-pill s-${item.status}">${statusLabel(item.status, item.type)}</span>
     </div>
-    ${tagsHtml ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem">${tagsHtml}</div>` : ""}
-    ${item.remind && item.status === "want" ? `<div class="remind-info" style="margin-bottom:1rem">🔔 提醒日期：${escapeHtml(item.remind)}${isOverdue(item.remind) ? " · <strong>已过期</strong>" : ""}</div>` : ""}
-    ${item.myScore ? `<div class="panel-section"><div class="panel-section-title">我的评分</div><div style="display:flex;align-items:baseline;gap:8px"><span class="score-big">${escapeHtml(formatScore(item.myScore))}</span><span style="font-size:12px;color:var(--ink4)">/ 10 · ${"★".repeat(roundedScore(item.myScore))}</span></div></div>` : ""}
+    ${item.isMock ? '<div class="remind-info" style="margin-bottom:1rem">这是为了铺满界面而加入的展示样本，不会写入你的数据库，也不能直接编辑。</div>' : ""}
+    ${tagsHtml ? `<div style="display:flex;gap:0.45rem;flex-wrap:wrap;margin-bottom:1rem">${tagsHtml}</div>` : ""}
+    ${item.remind && item.status === "want" ? `<div class="remind-info" style="margin-bottom:1rem">提醒日期：${escapeHtml(item.remind)}${isOverdue(item.remind) ? " · 已过期" : ""}</div>` : ""}
+    ${item.rating ? `<div class="panel-section"><div class="panel-section-title">我的评分</div><div style="display:flex;align-items:baseline;gap:0.6rem"><span class="score-big">${escapeHtml(formatScore(item.rating))}</span><span class="panel-text">/ 10</span></div></div>` : ""}
     ${item.desc ? `<div class="panel-section"><div class="panel-section-title">简介</div><div class="panel-text">${escapeHtml(item.desc)}</div></div>` : ""}
-    ${item.quickNote ? `<div class="panel-section"><div class="panel-section-title">随手记</div><div class="panel-text" style="background:#fff;padding:1rem;border-radius:var(--rsm);border:1px solid var(--border)">${escapeHtml(item.quickNote)}</div></div>` : ""}
-    ${item.note ? `<div class="panel-section"><div class="panel-section-title">观后感 / 读后感</div><div class="panel-text" style="background:#fff;padding:1rem;border-radius:var(--rsm);border:1px solid var(--border)">${escapeHtml(item.note)}</div></div>` : ""}
-    ${item.progress ? `<div class="panel-section"><div class="panel-section-title">阅读进度</div><div class="panel-text">${escapeHtml(item.progress)}</div></div>` : ""}
+    ${item.quickNote ? `<div class="panel-section"><div class="panel-section-title">随手记</div><div class="panel-text">${escapeHtml(item.quickNote)}</div></div>` : ""}
+    ${item.note ? `<div class="panel-section"><div class="panel-section-title">观后感 / 读后感</div><div class="panel-text">${escapeHtml(item.note)}</div></div>` : ""}
+    ${item.progress ? `<div class="panel-section"><div class="panel-section-title">当前进度</div><div class="panel-text">${escapeHtml(item.progress)}</div></div>` : ""}
     <div class="panel-section">
-      <div class="panel-section-title">💬 金句摘录</div>
+      <div class="panel-section-title">金句摘录 ${editable ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">＋</button>` : ""}</div>
       <div id="pd-quotes">${quotesHtml}</div>
-      <div class="add-item-row" style="margin-top:6px">
-        <input type="text" id="new-quote-input" placeholder="输入摘录的句子…" onkeydown="if(event.key==='Enter')addQuote('${item.id}')" />
-        <button onclick="addQuote('${item.id}')">添加</button>
-      </div>
+      ${editable ? `
+        <div class="add-item-row" style="margin-top:0.5rem">
+          <input type="text" id="new-quote-input" placeholder="输入想留住的一句话…" onkeydown="if(event.key==='Enter')addQuote('${item.id}')" />
+          <button onclick="addQuote('${item.id}')">添加</button>
+        </div>
+      ` : ""}
     </div>
-    ${item.status === "done" ? `<div class="panel-section"><div class="panel-section-title">🔁 重看记录 <button class="btn btn-ghost btn-sm" onclick="openRewatch('${item.id}')">＋ 添加</button></div><div id="pd-rewatches">${rewatchesHtml}</div></div>` : ""}
+    ${item.status === "done" ? `
+      <div class="panel-section">
+        <div class="panel-section-title">重看记录 ${editable ? `<button class="btn btn-ghost btn-sm" onclick="openRewatch('${item.id}')">＋ 添加</button>` : ""}</div>
+        <div id="pd-rewatches">${rewatchesHtml}</div>
+      </div>
+    ` : ""}
     <div class="panel-actions">
-      <button class="btn btn-outline" style="flex:1" onclick="openEdit('${item.id}');closeOverlay('panel-overlay')">编辑</button>
-      <button class="btn btn-ghost" style="color:var(--red-t)" onclick="deleteItem('${item.id}')">删除</button>
+      ${editable ? `<button class="btn btn-outline" style="flex:1" onclick="openEdit('${item.id}');closeOverlay('panel-overlay')">编辑</button>` : `<button class="btn btn-outline" style="flex:1" onclick="startNewFromItem('${item.id}');closeOverlay('panel-overlay')">把它加入我的收藏</button>`}
+      ${editable ? `<button class="btn btn-ghost" style="color:#9a3d32" onclick="deleteItem('${item.id}')">删除</button>` : ""}
     </div>
   `;
 
@@ -1125,24 +1874,22 @@ function openDetail(id) {
 }
 
 async function addQuote(id) {
+  const item = getRealItemById(id);
+  if (!item) {
+    return;
+  }
+
   const input = document.getElementById("new-quote-input");
   const text = input.value.trim();
   if (!text) {
     return;
   }
 
-  const item = items.find((entry) => entry.id === String(id));
-  if (!item) {
-    return;
-  }
-
-  const nextItem = {
-    ...item,
-    quotes: [...item.quotes, text]
-  };
-
   try {
-    const savedItem = await persistExistingItem(nextItem);
+    const savedItem = await persistExistingItem({
+      ...item,
+      quotes: [...item.quotes, text]
+    });
     replaceLocalItem(savedItem);
     input.value = "";
     openDetail(savedItem.id);
@@ -1153,17 +1900,15 @@ async function addQuote(id) {
 }
 
 async function delQuote(id, index) {
-  const item = items.find((entry) => entry.id === String(id));
+  const item = getRealItemById(id);
   if (!item) {
     return;
   }
 
-  const nextQuotes = item.quotes.filter((_, quoteIndex) => quoteIndex !== index);
-
   try {
     const savedItem = await persistExistingItem({
       ...item,
-      quotes: nextQuotes
+      quotes: item.quotes.filter((_, quoteIndex) => quoteIndex !== index)
     });
     replaceLocalItem(savedItem);
     openDetail(savedItem.id);
@@ -1174,6 +1919,10 @@ async function delQuote(id, index) {
 }
 
 function openRewatch(id) {
+  if (!getRealItemById(id)) {
+    return;
+  }
+
   rewatchTargetId = id;
   document.getElementById("rw-date").value = today();
   document.getElementById("rw-note").value = "";
@@ -1185,24 +1934,22 @@ async function saveRewatch() {
     return;
   }
 
-  const item = items.find((entry) => entry.id === String(rewatchTargetId));
+  const item = getRealItemById(rewatchTargetId);
   if (!item) {
     return;
   }
 
-  const nextItem = {
-    ...item,
-    rewatches: [
-      ...item.rewatches,
-      {
-        date: document.getElementById("rw-date").value || today(),
-        note: document.getElementById("rw-note").value.trim()
-      }
-    ]
-  };
-
   try {
-    const savedItem = await persistExistingItem(nextItem);
+    const savedItem = await persistExistingItem({
+      ...item,
+      rewatches: [
+        ...item.rewatches,
+        {
+          date: document.getElementById("rw-date").value || today(),
+          note: document.getElementById("rw-note").value.trim()
+        }
+      ]
+    });
     replaceLocalItem(savedItem);
     closeOverlay("modal-rewatch");
     openDetail(savedItem.id);
@@ -1213,14 +1960,16 @@ async function saveRewatch() {
 }
 
 async function deleteItem(id) {
+  if (!getRealItemById(id)) {
+    return;
+  }
+
   if (!window.confirm("确认删除这条记录？")) {
     return;
   }
 
   try {
-    await requestJson(`/api/items/${id}`, {
-      method: "DELETE"
-    });
+    await requestJson(`/api/items/${id}`, { method: "DELETE" });
     closeOverlay("panel-overlay");
     await loadItems();
   } catch (error) {
@@ -1230,8 +1979,12 @@ async function deleteItem(id) {
 
 function openExport() {
   const doneCount = items.filter((item) => item.status === "done").length;
-  const quotesCount = items.reduce((sum, item) => sum + item.quotes.length, 0);
-  document.getElementById("export-preview").innerHTML = `📦 共 ${items.length} 条记录 · 已完成 ${doneCount} 条 · ${quotesCount} 条金句摘录<br><span style="color:var(--ink4)">文件名：mediashelf_${today()}.json</span>`;
+  const quoteCount = items.reduce((sum, item) => sum + item.quotes.length, 0);
+  document.getElementById("export-preview").innerHTML = `
+    共 ${items.length} 条真实记录 · 已完成 ${doneCount} 条 · ${quoteCount} 条摘录
+    <br />
+    <span style="color:var(--ink-4)">文件名：mediashelf_${today()}.json</span>
+  `;
   document.getElementById("modal-export").classList.add("open");
 }
 
@@ -1268,9 +2021,7 @@ async function doImport() {
 
     await requestJson("/api/items/import", {
       method: "POST",
-      body: JSON.stringify({
-        items: parsedItems
-      })
+      body: JSON.stringify({ items: parsedItems })
     });
 
     message.textContent = "";
@@ -1281,8 +2032,23 @@ async function doImport() {
   }
 }
 
+function setQuoteWorkFilter(value) {
+  quoteWorkFilter = value || "all";
+  renderQuotesPage();
+}
+
+function shiftCalendarMonth(delta) {
+  calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + delta, 1);
+  renderMoodCalendar();
+}
+
+function jumpCalendarToday() {
+  calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  renderMoodCalendar();
+}
+
 function closeOverlay(id) {
-  document.getElementById(id).classList.remove("open");
+  document.getElementById(id)?.classList.remove("open");
 }
 
 function bgClose(event, id) {
@@ -1300,7 +2066,7 @@ async function loadItems() {
     console.error("Failed to load items:", error);
     document.getElementById("cards-grid").innerHTML = `
       <div class="empty">
-        <div class="empty-icon">⚠️</div>
+        <div class="empty-icon">⚠</div>
         <div class="empty-text">加载失败</div>
         <div class="empty-sub">${escapeHtml(error.message || "请检查后端接口")}</div>
       </div>
@@ -1310,12 +2076,32 @@ async function loadItems() {
 
 document.getElementById("f-status").addEventListener("change", updateFormFields);
 document.getElementById("f-type").addEventListener("change", updateFormFields);
+["filter-rating", "filter-tags", "filter-year", "filter-type", "filter-status"].forEach((id) => {
+  const element = document.getElementById(id);
+  if (!element) {
+    return;
+  }
 
+  const eventName = element.tagName === "SELECT" ? "change" : "input";
+  element.addEventListener(eventName, () => {
+    syncAdvancedFiltersFromControls();
+    render();
+  });
+});
+
+syncAdvancedFiltersFromControls();
+toggleAdvancedFilters(false);
+setViewMode("grid");
 loadItems();
 
 window.setNav = setNav;
 window.setPill = setPill;
+window.setCategoryTab = setCategoryTab;
+window.setViewMode = setViewMode;
+window.toggleAdvancedFilters = toggleAdvancedFilters;
+window.clearAdvancedFilters = clearAdvancedFilters;
 window.openAdd = openAdd;
+window.startNewFromItem = startNewFromItem;
 window.openEdit = openEdit;
 window.fetchDouban = fetchDouban;
 window.saveItem = saveItem;

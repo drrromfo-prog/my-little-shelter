@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的书影记录</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #faf8f3;
+  --cream2: #f3f0e8;
+  --cream3: #ede9de;
+  --ink: #1c1917;
+  --ink2: #44403c;
+  --ink3: #78716c;
+  --ink4: #a8a29e;
+  --border: #e5e0d5;
+  --border2: #d6cfc3;
+  --pink: #fce7f3; --pink-t: #9d174d;
+  --blue: #dbeafe; --blue-t: #1e40af;
+  --green: #dcfce7; --green-t: #166534;
+  --amber: #fef3c7; --amber-t: #92400e;
+  --purple: #ede9fe; --purple-t: #5b21b6;
+  --teal: #ccfbf1; --teal-t: #115e59;
+  --red: #fee2e2; --red-t: #991b1b;
+  --r: 16px;
+  --r-sm: 10px;
+  --r-lg: 24px;
+  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body { font-family: 'Noto Sans SC', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
+
+/* Layout */
+.page { display: flex; min-height: 100vh; }
+.sidebar { width: 220px; flex-shrink: 0; background: var(--cream2); border-right: 1px solid var(--border); padding: 2rem 1.25rem; display: flex; flex-direction: column; gap: 2rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.main { flex: 1; min-width: 0; padding: 2rem 2.5rem; }
+
+/* Sidebar */
+.logo { font-family: 'Noto Serif SC', serif; font-size: 17px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+.logo span { display: block; font-size: 11px; font-weight: 400; color: var(--ink4); font-family: 'Noto Sans SC', sans-serif; margin-top: 2px; letter-spacing: .5px; }
+.nav { display: flex; flex-direction: column; gap: 3px; }
+.nav-item { padding: 8px 12px; border-radius: var(--r-sm); font-size: 13px; color: var(--ink3); cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 8px; border: none; background: none; width: 100%; text-align: left; }
+.nav-item:hover { background: var(--cream3); color: var(--ink); }
+.nav-item.active { background: var(--ink); color: #fff; }
+.nav-item .nav-icon { font-size: 15px; }
+.nav-section { font-size: 10px; letter-spacing: 1px; color: var(--ink4); text-transform: uppercase; padding: 0 12px; margin-bottom: 4px; }
+.sidebar-stats { margin-top: auto; background: var(--cream3); border-radius: var(--r); padding: 1rem; }
+.sidebar-stats-title { font-size: 11px; color: var(--ink4); margin-bottom: 10px; letter-spacing: .5px; }
+.sidebar-stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.sidebar-stat-label { font-size: 12px; color: var(--ink3); }
+.sidebar-stat-val { font-size: 13px; font-weight: 500; color: var(--ink); }
+
+/* Header */
+.main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+.page-title { font-family: 'Noto Serif SC', serif; font-size: 26px; font-weight: 700; color: var(--ink); }
+.page-sub { font-size: 13px; color: var(--ink4); margin-top: 2px; }
+.header-actions { display: flex; gap: 8px; }
+.btn { padding: 9px 20px; border-radius: var(--r-sm); font-size: 13px; cursor: pointer; transition: all .15s; border: 1px solid transparent; font-family: inherit; display: flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--ink); color: #fff; }
+.btn-primary:hover { background: #2c2825; }
+.btn-outline { background: #fff; color: var(--ink2); border-color: var(--border2); }
+.btn-outline:hover { border-color: var(--ink3); }
+.btn-ghost { background: transparent; color: var(--ink3); border-color: transparent; }
+.btn-ghost:hover { background: var(--cream2); }
+
+/* Search & Filters */
+.toolbar { display: flex; gap: 10px; margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap; }
+.search-wrap { flex: 1; min-width: 200px; position: relative; }
+.search-wrap input { width: 100%; padding: 9px 14px 9px 38px; border-radius: var(--r-sm); border: 1px solid var(--border); background: #fff; font-size: 13px; color: var(--ink); font-family: inherit; outline: none; transition: border .15s; }
+.search-wrap input:focus { border-color: var(--ink3); }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink4); font-size: 14px; pointer-events: none; }
+.filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill { padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--ink3); transition: all .15s; }
+.pill:hover { border-color: var(--ink3); color: var(--ink); }
+.pill.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.pill-status-want.active { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+.pill-status-done.active { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.pill-status-drop.active { background: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }
+.sort-select { padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--border); background: #fff; font-size: 12px; color: var(--ink3); font-family: inherit; cursor: pointer; outline: none; }
+
+/* Cards Grid */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.card { background: #fff; border-radius: var(--r); border: 1px solid var(--border); overflow: hidden; cursor: pointer; transition: all .2s; box-shadow: var(--shadow); }
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border2); }
+.card-cover { width: 100%; aspect-ratio: 2/3; background: var(--cream2); position: relative; overflow: hidden; }
+.card-cover img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.card:hover .card-cover img { transform: scale(1.04); }
+.cover-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--ink4); font-size: 11px; }
+.cover-placeholder .cover-icon { font-size: 28px; opacity: .4; }
+.cover-placeholder .cover-title-sm { font-size: 12px; font-weight: 500; color: var(--ink3); padding: 0 12px; text-align: center; line-height: 1.4; }
+.card-status-badge { position: absolute; top: 8px; left: 8px; padding: 3px 9px; border-radius: 20px; font-size: 10px; font-weight: 500; }
+.card-body { padding: 10px 12px 12px; }
+.card-title { font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--ink); margin-bottom: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-meta { font-size: 11px; color: var(--ink4); margin-bottom: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-score { display: flex; align-items: center; gap: 4px; }
+.star-display { color: #f59e0b; font-size: 12px; letter-spacing: -1px; }
+.score-num { font-size: 11px; color: var(--ink3); }
+.card-tags-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.tag { font-size: 10px; padding: 2px 7px; border-radius: 8px; }
+
+/* Status badge colors */
+.s-want { background: var(--blue); color: var(--blue-t); }
+.s-done { background: var(--green); color: var(--green-t); }
+.s-drop { background: var(--cream3); color: var(--ink3); }
+
+/* Tag color rotation */
+.tag-c0 { background: var(--pink); color: var(--pink-t); }
+.tag-c1 { background: var(--blue); color: var(--blue-t); }
+.tag-c2 { background: var(--green); color: var(--green-t); }
+.tag-c3 { background: var(--amber); color: var(--amber-t); }
+.tag-c4 { background: var(--purple); color: var(--purple-t); }
+.tag-c5 { background: var(--teal); color: var(--teal-t); }
+
+/* Empty state */
+.empty { text-align: center; padding: 5rem 1rem; }
+.empty-emoji { font-size: 48px; margin-bottom: 1rem; }
+.empty-text { font-size: 15px; color: var(--ink3); margin-bottom: .5rem; }
+.empty-sub { font-size: 13px; color: var(--ink4); }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); backdrop-filter: blur(4px); z-index: 200; overflow-y: auto; padding: 2rem 1rem; }
+.modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
+.modal { background: var(--cream); border-radius: var(--r-lg); width: 100%; max-width: 560px; padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,.2); animation: slideUp .2s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.modal-title { font-family: 'Noto Serif SC', serif; font-size: 18px; font-weight: 700; }
+.modal-close { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--cream3); cursor: pointer; font-size: 16px; color: var(--ink3); display: flex; align-items: center; justify-content: center; transition: all .15s; }
+.modal-close:hover { background: var(--cream2); color: var(--ink); }
+
+/* Douban fetch box */
+.douban-box { background: #fff; border: 1.5px dashed var(--border2); border-radius: var(--r); padding: 1rem; margin-bottom: 1.25rem; }
+.douban-label { font-size: 11px; color: var(--ink4); margin-bottom: 6px; letter-spacing: .3px; }
+.douban-row { display: flex; gap: 8px; }
+.douban-row input { flex: 1; padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--cream); font-size: 13px; color: var(--ink); font-family: inherit; outline: none; }
+.douban-row input:focus { border-color: var(--ink3); }
+.fetch-btn { padding: 8px 16px; border-radius: var(--r-sm); background: var(--ink); color: #fff; border: none; font-size: 12px; cursor: pointer; white-space: nowrap; font-family: inherit; transition: all .15s; }
+.fetch-btn:hover { background: #2c2825; }
+.fetch-btn:disabled { background: var(--ink4); cursor: not-allowed; }
+.fetch-hint { font-size: 11px; margin-top: 6px; min-height: 16px; }
+.hint-ok { color: #166534; }
+.hint-err { color: #991b1b; }
+
+/* Form */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-full { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 11px; color: var(--ink3); font-weight: 500; letter-spacing: .3px; }
+.field input, .field textarea, .field select { padding: 8px 11px; border-radius: var(--r-sm); border: 1px solid var(--border); background: #fff; font-size: 13px; color: var(--ink); font-family: inherit; outline: none; transition: border .15s; }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--ink3); background: var(--cream); }
+.field textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+
+/* Star picker */
+.star-picker { display: flex; gap: 4px; margin-top: 2px; }
+.sp-star { font-size: 22px; cursor: pointer; color: var(--cream3); transition: color .1s, transform .1s; line-height: 1; user-select: none; }
+.sp-star:hover { transform: scale(1.15); }
+.sp-star.lit { color: #f59e0b; }
+
+/* Modal footer */
+.modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+
+/* Detail panel */
+.detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); backdrop-filter: blur(4px); z-index: 200; }
+.detail-overlay.open { display: block; }
+.detail-panel { position: fixed; right: 0; top: 0; height: 100vh; width: 420px; background: var(--cream); box-shadow: -8px 0 32px rgba(0,0,0,.12); overflow-y: auto; padding: 2rem; animation: slideIn .2s ease; }
+@keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.detail-close { position: absolute; top: 1.25rem; right: 1.25rem; width: 32px; height: 32px; border-radius: 50%; background: var(--cream3); border: none; cursor: pointer; font-size: 16px; color: var(--ink3); display: flex; align-items: center; justify-content: center; }
+.detail-cover { width: 100%; max-height: 240px; object-fit: cover; border-radius: var(--r); margin-bottom: 1.25rem; background: var(--cream2); }
+.detail-cover-ph { width: 100%; height: 180px; background: var(--cream2); border-radius: var(--r); margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+.detail-title { font-family: 'Noto Serif SC', serif; font-size: 20px; font-weight: 700; margin-bottom: .5rem; line-height: 1.4; }
+.detail-meta { font-size: 12px; color: var(--ink3); margin-bottom: 1rem; display: flex; flex-wrap: wrap; gap: 6px; }
+.detail-meta-pill { padding: 2px 10px; background: var(--cream2); border-radius: 20px; }
+.detail-section { margin-bottom: 1.25rem; }
+.detail-section-title { font-size: 11px; color: var(--ink4); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.detail-text { font-size: 13px; color: var(--ink2); line-height: 1.8; }
+.detail-score-big { font-size: 32px; font-weight: 700; color: #f59e0b; font-family: 'Noto Serif SC', serif; }
+.detail-score-sub { font-size: 12px; color: var(--ink4); }
+.detail-actions { display: flex; gap: 8px; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+
+/* Stats page */
+.stats-page { display: none; }
+.stats-page.active { display: block; }
+.main-content { display: block; }
+.main-content.stats-active { display: none; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 2rem; }
+.stat-box { background: #fff; border-radius: var(--r); border: 1px solid var(--border); padding: 1.25rem; }
+.stat-box-num { font-family: 'Noto Serif SC', serif; font-size: 32px; font-weight: 700; color: var(--ink); line-height: 1; }
+.stat-box-label { font-size: 12px; color: var(--ink4); margin-top: 6px; }
+.stats-section { background: #fff; border-radius: var(--r); border: 1px solid var(--border); padding: 1.5rem; margin-bottom: 1.25rem; }
+.stats-section h3 { font-size: 14px; font-weight: 500; margin-bottom: 1rem; color: var(--ink2); }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.bar-label { font-size: 12px; color: var(--ink3); width: 60px; text-align: right; flex-shrink: 0; }
+.bar-track { flex: 1; height: 8px; background: var(--cream2); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; background: var(--ink); transition: width .5s ease; }
+.bar-val { font-size: 11px; color: var(--ink4); width: 24px; flex-shrink: 0; }
+.top-list { display: flex; flex-direction: column; gap: 10px; }
+.top-item { display: flex; gap: 12px; align-items: center; }
+.top-rank { font-size: 18px; font-weight: 700; color: var(--ink4); width: 24px; font-family: 'Noto Serif SC', serif; }
+.top-rank.r1 { color: #f59e0b; }
+.top-rank.r2 { color: var(--ink3); }
+.top-rank.r3 { color: #92400e; }
+.top-info { flex: 1; min-width: 0; }
+.top-title { font-size: 13px; font-weight: 500; color: var(--ink); }
+.top-meta { font-size: 11px; color: var(--ink4); }
+.top-score { font-size: 14px; color: #f59e0b; font-weight: 600; }
+
+/* Share modal */
+.share-preview { background: var(--ink); color: #fff; border-radius: var(--r); padding: 1.5rem; font-family: 'Noto Serif SC', serif; margin-bottom: 1rem; }
+.share-preview h3 { font-size: 16px; margin-bottom: 4px; }
+.share-preview p { font-size: 12px; opacity: .6; font-family: 'Noto Sans SC', sans-serif; }
+.share-link-box { display: flex; gap: 8px; }
+.share-link-box input { flex: 1; padding: 9px 12px; border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--cream); font-size: 12px; color: var(--ink3); font-family: 'Noto Sans SC', monospace; }
+.copy-btn { padding: 9px 16px; border-radius: var(--r-sm); background: var(--ink); color: #fff; border: none; font-size: 12px; cursor: pointer; font-family: inherit; }
+
+/* Share view */
+.share-view { max-width: 680px; margin: 0 auto; padding: 2rem 1rem; }
+.share-header { text-align: center; margin-bottom: 2rem; }
+.share-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { padding: 1.25rem; }
+  .cards-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .detail-panel { width: 100%; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="page" id="main-page">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo">书影记录<span>MY MEDIA SHELF</span></div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">浏览</div>
+      <button class="nav-item active" onclick="setNav('all')" id="nav-all"><span class="nav-icon">✦</span> 全部</button>
+      <button class="nav-item" onclick="setNav('movie')" id="nav-movie"><span class="nav-icon">🎬</span> 电影</button>
+      <button class="nav-item" onclick="setNav('book')" id="nav-book"><span class="nav-icon">📚</span> 书籍</button>
+      <div class="nav-section" style="margin-top:12px">状态</div>
+      <button class="nav-item" onclick="setNav('want')" id="nav-want"><span class="nav-icon">🔖</span> 想看/想读</button>
+      <button class="nav-item" onclick="setNav('done')" id="nav-done"><span class="nav-icon">✅</span> 已看/已读</button>
+      <button class="nav-item" onclick="setNav('stats')" id="nav-stats"><span class="nav-icon">📊</span> 统计</button>
+    </nav>
+    <div class="sidebar-stats" id="sidebar-stats"></div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Header -->
+    <div class="main-header">
+      <div>
+        <div class="page-title" id="page-title">全部记录</div>
+        <div class="page-sub" id="page-sub">收藏你看过的、想看的一切</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" onclick="openShare()">🔗 分享</button>
+        <button class="btn btn-primary" onclick="openAdd()">＋ 新增</button>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content" id="main-content">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="搜索标题、导演/作者、标签…" oninput="render()" />
+        </div>
+        <select class="sort-select" onchange="render();" id="sort-select">
+          <option value="date">最新添加</option>
+          <option value="score">我的评分</option>
+          <option value="dscore">豆瓣评分</option>
+          <option value="title">标题排序</option>
+        </select>
+      </div>
+      <div class="filter-pills" id="filter-pills" style="margin-bottom:1.5rem"></div>
+      <div class="cards-grid" id="cards-grid"></div>
+    </div>
+
+    <!-- Stats page -->
+    <div class="stats-page" id="stats-page"></div>
+  </main>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event,'modal-overlay')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">新增记录</div>
+      <button class="modal-close" onclick="closeModal('modal-overlay')">✕</button>
+    </div>
+    <div class="douban-box">
+      <div class="douban-label">豆瓣链接 — 粘贴后点自动填充</div>
+      <div class="douban-row">
+        <input type="text" id="f-douban" placeholder="https://movie.douban.com/subject/…" />
+        <button class="fetch-btn" id="fetch-btn" onclick="fetchDouban()">自动填充</button>
+      </div>
+      <div class="fetch-hint" id="fetch-hint"></div>
+    </div>
+    <div class="form-grid">
+      <div class="field form-full">
+        <label>标题 *</label>
+        <input type="text" id="f-title" placeholder="片名 / 书名" />
+      </div>
+      <div class="field form-full">
+        <label>封面图链接</label>
+        <input type="text" id="f-cover" placeholder="https://…（可留空）" />
+      </div>
+      <div class="field">
+        <label>导演 / 作者</label>
+        <input type="text" id="f-creator" />
+      </div>
+      <div class="field">
+        <label>年份</label>
+        <input type="text" id="f-year" placeholder="2024" />
+      </div>
+      <div class="field">
+        <label>分类</label>
+        <select id="f-type">
+          <option value="movie">电影</option>
+          <option value="book">书籍</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>状态</label>
+        <select id="f-status">
+          <option value="want">想看 / 想读</option>
+          <option value="done">已看 / 已读</option>
+          <option value="drop">搁置</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>豆瓣评分</label>
+        <input type="text" id="f-dscore" placeholder="8.5" />
+      </div>
+      <div class="field">
+        <label>标签（逗号分隔）</label>
+        <input type="text" id="f-tags" placeholder="悬疑, 犯罪" />
+      </div>
+      <div class="field form-full">
+        <label>我的评分（点星星）</label>
+        <div class="star-picker" id="star-picker"></div>
+      </div>
+      <div class="field form-full">
+        <label>简介</label>
+        <textarea id="f-desc" placeholder="剧情/内容简介…"></textarea>
+      </div>
+      <div class="field form-full">
+        <label>观后感 / 读后感</label>
+        <textarea id="f-note" placeholder="写下你的感受、摘要或短评…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-overlay')">取消</button>
+      <button class="btn btn-primary" onclick="saveItem()">保存记录</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Panel -->
+<div class="detail-overlay" id="detail-overlay" onclick="overlayClick(event,'detail-overlay')">
+  <div class="detail-panel" id="detail-panel">
+    <button class="detail-close" onclick="closeModal('detail-overlay')">✕</button>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="share-overlay" onclick="overlayClick(event,'share-overlay')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">分享我的书影记录</div>
+      <button class="modal-close" onclick="closeModal('share-overlay')">✕</button>
+    </div>
+    <div class="share-preview">
+      <h3>📚 我的书影记录</h3>
+      <p id="share-preview-text">正在生成…</p>
+    </div>
+    <p style="font-size:12px;color:var(--ink4);margin-bottom:10px">将数据编码到链接中，对方打开即可查看你的列表（只读）</p>
+    <div class="share-link-box">
+      <input type="text" id="share-link-input" readonly />
+      <button class="copy-btn" onclick="copyShareLink()" id="copy-btn">复制</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('share-overlay')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SK = 'mediashelf_v3';
+let items = [];
+let myScore = 0;
+let editId = null;
+let currentNav = 'all';
+
+function load() { try { const d = localStorage.getItem(SK); if (d) items = JSON.parse(d); } catch(e) { items = []; } }
+function save() { localStorage.setItem(SK, JSON.stringify(items)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// Check for share view
+function checkShareView() {
+  const hash = location.hash;
+  if (hash.startsWith('#share=')) {
+    try {
+      const data = JSON.parse(atob(hash.slice(7)));
+      renderShareView(data);
+      return true;
+    } catch(e) {}
+  }
+  return false;
+}
+
+function renderShareView(data) {
+  document.body.innerHTML = `
+    <div class="share-view">
+      <div class="share-header">
+        <div style="font-family:'Noto Serif SC',serif;font-size:24px;font-weight:700;margin-bottom:6px">书影记录</div>
+        <div style="font-size:13px;color:var(--ink4)">共 ${data.length} 条 · 只读分享</div>
+      </div>
+      <div class="share-cards">
+        ${data.map(item => renderCardHTML(item, false)).join('')}
+      </div>
+    </div>`;
+}
+
+// Nav
+function setNav(n) {
+  currentNav = n;
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('nav-' + n);
+  if (el) el.classList.add('active');
+
+  const titles = { all:'全部记录', movie:'电影', book:'书籍', want:'想看 / 想读', done:'已看 / 已读', stats:'统计' };
+  const subs = { all:'收藏你看过的、想看的一切', movie:'电影记录', book:'书籍记录', want:'还没来得及看的', done:'留下你的痕迹', stats:'你的观影读书数据' };
+  document.getElementById('page-title').textContent = titles[n] || '全部记录';
+  document.getElementById('page-sub').textContent = subs[n] || '';
+
+  if (n === 'stats') {
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('stats-page').style.display = 'block';
+    renderStats();
+  } else {
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('stats-page').style.display = 'none';
+    render();
+  }
+}
+
+// Render pills based on nav
+function renderFilterPills() {
+  const container = document.getElementById('filter-pills');
+  let pills = '';
+  if (currentNav === 'all') {
+    pills = [
+      {key:'type-all',label:'全部类型'},{key:'type-movie',label:'🎬 电影'},{key:'type-book',label:'📚 书籍'}
+    ].map(p => `<span class="pill ${activePill===p.key?'active':''}" onclick="setPill('${p.key}')">${p.label}</span>`).join('');
+  }
+  container.innerHTML = pills;
+}
+
+let activePill = 'type-all';
+function setPill(k) { activePill = k; render(); }
+
+function getFiltered() {
+  let arr = [...items];
+  // Nav filter
+  if (currentNav === 'movie') arr = arr.filter(i => i.type === 'movie');
+  else if (currentNav === 'book') arr = arr.filter(i => i.type === 'book');
+  else if (currentNav === 'want') arr = arr.filter(i => i.status === 'want');
+  else if (currentNav === 'done') arr = arr.filter(i => i.status === 'done');
+  // Pill filter
+  if (currentNav === 'all') {
+    if (activePill === 'type-movie') arr = arr.filter(i => i.type === 'movie');
+    else if (activePill === 'type-book') arr = arr.filter(i => i.type === 'book');
+  }
+  // Search
+  const q = document.getElementById('search-input')?.value.trim().toLowerCase();
+  if (q) arr = arr.filter(i =>
+    i.title?.toLowerCase().includes(q) ||
+    i.creator?.toLowerCase().includes(q) ||
+    (i.tags||[]).some(t => t.toLowerCase().includes(q))
+  );
+  // Sort
+  const sort = document.getElementById('sort-select')?.value || 'date';
+  if (sort === 'score') arr.sort((a,b) => (b.myScore||0)-(a.myScore||0));
+  else if (sort === 'dscore') arr.sort((a,b) => parseFloat(b.dscore||0)-parseFloat(a.dscore||0));
+  else if (sort === 'title') arr.sort((a,b) => a.title.localeCompare(b.title,'zh'));
+  else arr.sort((a,b) => b.addedAt - a.addedAt);
+  return arr;
+}
+
+const tagColors = ['tag-c0','tag-c1','tag-c2','tag-c3','tag-c4','tag-c5'];
+function tagColor(tag) {
+  let h = 0; for (let c of tag) h = (h * 31 + c.charCodeAt(0)) % tagColors.length;
+  return tagColors[Math.abs(h)];
+}
+
+function statusLabel(s, type) {
+  if (s === 'want') return type === 'book' ? '想读' : '想看';
+  if (s === 'done') return type === 'book' ? '已读' : '已看';
+  return '搁置';
+}
+
+function starsHTML(n) {
+  if (!n) return '';
+  return '★'.repeat(n) + '☆'.repeat(10-n);
+}
+
+function renderCardHTML(item, clickable=true) {
+  const tags = (item.tags||[]).slice(0,3);
+  const coverHTML = item.cover
+    ? `<img src="${item.cover}" onerror="this.parentElement.innerHTML='<div class=cover-placeholder><div class=cover-icon>${item.type==='book'?'📚':'🎬'}</div><div class=cover-title-sm>${item.title}</div></div>'" />`
+    : `<div class="cover-placeholder"><div class="cover-icon">${item.type==='book'?'📚':'🎬'}</div><div class="cover-title-sm">${item.title}</div></div>`;
+  const onclick = clickable ? `onclick="openDetail('${item.id}')"` : '';
+  return `
+    <div class="card" ${onclick}>
+      <div class="card-cover">
+        ${coverHTML}
+        <span class="card-status-badge s-${item.status}">${statusLabel(item.status,item.type)}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${item.title}</div>
+        <div class="card-meta">${[item.creator||'',item.year||''].filter(Boolean).join(' · ') || (item.dscore ? '豆瓣 '+item.dscore : '&nbsp;')}</div>
+        ${item.myScore ? `<div class="card-score"><span class="star-display" style="font-size:10px;letter-spacing:0">${'★'.repeat(item.myScore)}</span><span class="score-num">${item.myScore}/10</span></div>` : ''}
+        ${tags.length ? `<div class="card-tags-row">${tags.map(t=>`<span class="tag ${tagColor(t)}">${t}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function render() {
+  renderFilterPills();
+  const arr = getFiltered();
+  const grid = document.getElementById('cards-grid');
+  if (!arr.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="empty-emoji">${currentNav==='book'?'📚':'🎬'}</div>
+      <div class="empty-text">暂无记录</div>
+      <div class="empty-sub">点击右上角「新增」开始记录吧~</div>
+    </div>`;
+  } else {
+    grid.innerHTML = arr.map(i => renderCardHTML(i)).join('');
+  }
+  renderSidebarStats();
+}
+
+function renderSidebarStats() {
+  const all = items;
+  const movies = all.filter(i=>i.type==='movie');
+  const books = all.filter(i=>i.type==='book');
+  const done = all.filter(i=>i.status==='done');
+  const scored = done.filter(i=>i.myScore>0);
+  const avg = scored.length ? (scored.reduce((s,i)=>s+i.myScore,0)/scored.length).toFixed(1) : '-';
+  document.getElementById('sidebar-stats').innerHTML = `
+    <div class="sidebar-stats-title">MY STATS</div>
+    <div class="sidebar-stat-row"><span class="sidebar-stat-label">全部条目</span><span class="sidebar-stat-val">${all.length}</span></div>
+    <div class="sidebar-stat-row"><span class="sidebar-stat-label">电影</span><span class="sidebar-stat-val">${movies.length}</span></div>
+    <div class="sidebar-stat-row"><span class="sidebar-stat-label">书籍</span><span class="sidebar-stat-val">${books.length}</span></div>
+    <div class="sidebar-stat-row"><span class="sidebar-stat-label">已看/读</span><span class="sidebar-stat-val">${done.length}</span></div>
+    <div class="sidebar-stat-row"><span class="sidebar-stat-label">平均评分</span><span class="sidebar-stat-val">${avg}</span></div>`;
+}
+
+// Stats page
+function renderStats() {
+  const all = items;
+  const done = all.filter(i=>i.status==='done');
+  const movies = all.filter(i=>i.type==='movie');
+  const books = all.filter(i=>i.type==='book');
+  const scored = done.filter(i=>i.myScore>0);
+  const avg = scored.length ? (scored.reduce((s,i)=>s+i.myScore,0)/scored.length).toFixed(1) : '-';
+  // Tag freq
+  const tagFreq = {};
+  all.forEach(i=>(i.tags||[]).forEach(t=>{tagFreq[t]=(tagFreq[t]||0)+1;}));
+  const topTags = Object.entries(tagFreq).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxTagCount = topTags[0]?.[1] || 1;
+  // Score dist
+  const scoreDist = Array(10).fill(0);
+  scored.forEach(i=>scoreDist[i.myScore-1]++);
+  const maxDist = Math.max(...scoreDist) || 1;
+  // Top scored
+  const topScored = [...done].filter(i=>i.myScore>0).sort((a,b)=>b.myScore-a.myScore).slice(0,5);
+  // By year
+  const yearMap = {};
+  done.forEach(i=>{if(i.year){yearMap[i.year]=(yearMap[i.year]||0)+1;}});
+  const thisYear = new Date().getFullYear().toString();
+  const thisYearCount = yearMap[thisYear]||0;
+
+  document.getElementById('stats-page').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-box-num">${all.length}</div><div class="stat-box-label">总条目</div></div>
+      <div class="stat-box"><div class="stat-box-num">${done.length}</div><div class="stat-box-label">已完成</div></div>
+      <div class="stat-box"><div class="stat-box-num">${avg}</div><div class="stat-box-label">平均评分</div></div>
+      <div class="stat-box"><div class="stat-box-num">${thisYearCount}</div><div class="stat-box-label">${thisYear}年完成</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.25rem">
+      <div class="stats-section">
+        <h3>类型分布</h3>
+        <div class="bar-row"><span class="bar-label">电影</span><div class="bar-track"><div class="bar-fill" style="width:${all.length?movies.length/all.length*100:0}%"></div></div><span class="bar-val">${movies.length}</span></div>
+        <div class="bar-row"><span class="bar-label">书籍</span><div class="bar-track"><div class="bar-fill" style="width:${all.length?books.length/all.length*100:0}%;background:#d97706"></div></div><span class="bar-val">${books.length}</span></div>
+      </div>
+      <div class="stats-section">
+        <h3>常用标签</h3>
+        ${topTags.map(([t,n])=>`<div class="bar-row"><span class="bar-label" style="width:56px;font-size:11px">${t}</span><div class="bar-track"><div class="bar-fill" style="width:${n/maxTagCount*100}%;background:#6d28d9"></div></div><span class="bar-val">${n}</span></div>`).join('') || '<div style="font-size:13px;color:var(--ink4)">暂无标签</div>'}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="stats-section">
+        <h3>⭐ 我的评分分布</h3>
+        ${scoreDist.map((n,i)=>`<div class="bar-row"><span class="bar-label">${i+1}分</span><div class="bar-track"><div class="bar-fill" style="width:${n/maxDist*100}%;background:#f59e0b"></div></div><span class="bar-val">${n}</span></div>`).join('')}
+      </div>
+      <div class="stats-section">
+        <h3>🏆 评分最高</h3>
+        <div class="top-list">
+          ${topScored.map((item,i)=>`
+            <div class="top-item">
+              <div class="top-rank ${i===0?'r1':i===1?'r2':i===2?'r3':''}">${i+1}</div>
+              <div class="top-info">
+                <div class="top-title">${item.title}</div>
+                <div class="top-meta">${item.creator||''}</div>
+              </div>
+              <div class="top-score">${item.myScore}</div>
+            </div>`).join('') || '<div style="font-size:13px;color:var(--ink4)">还没有评分记录</div>'}
+        </div>
+      </div>
+    </div>`;
+}
+
+// Detail panel
+function openDetail(id) {
+  const item = items.find(i=>i.id===id);
+  if (!item) return;
+  const tags = (item.tags||[]).map(t=>`<span class="tag ${tagColor(t)}" style="font-size:12px;padding:3px 10px">${t}</span>`).join('');
+  document.getElementById('detail-content').innerHTML = `
+    ${item.cover ? `<img class="detail-cover" src="${item.cover}" onerror="this.outerHTML='<div class=detail-cover-ph>${item.type==='book'?'📚':'🎬'}</div>'" />` : `<div class="detail-cover-ph">${item.type==='book'?'📚':'🎬'}</div>`}
+    <div class="detail-title">${item.title}</div>
+    <div class="detail-meta">
+      ${item.creator?`<span class="detail-meta-pill">${item.creator}</span>`:''}
+      ${item.year?`<span class="detail-meta-pill">${item.year}</span>`:''}
+      ${item.dscore?`<span class="detail-meta-pill">豆瓣 ${item.dscore}</span>`:''}
+      <span class="detail-meta-pill s-${item.status}" style="font-size:11px">${statusLabel(item.status,item.type)}</span>
+    </div>
+    ${tags ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem">${tags}</div>` : ''}
+    ${item.myScore ? `
+    <div class="detail-section">
+      <div class="detail-section-title">我的评分</div>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <div class="detail-score-big">${item.myScore}</div>
+        <div class="detail-score-sub">/ 10 · ${'★'.repeat(item.myScore)}</div>
+      </div>
+    </div>` : ''}
+    ${item.desc ? `<div class="detail-section"><div class="detail-section-title">简介</div><div class="detail-text">${item.desc}</div></div>` : ''}
+    ${item.note ? `<div class="detail-section"><div class="detail-section-title">观后感 / 读后感</div><div class="detail-text" style="background:#fff;padding:1rem;border-radius:var(--r-sm);border:1px solid var(--border)">${item.note}</div></div>` : ''}
+    ${item.douban ? `<div class="detail-section"><a href="${item.douban}" target="_blank" style="font-size:12px;color:var(--ink4)">🔗 豆瓣页面</a></div>` : ''}
+    <div class="detail-actions">
+      <button class="btn btn-outline" style="flex:1" onclick="openEdit('${item.id}');closeModal('detail-overlay')">编辑</button>
+      <button class="btn btn-ghost" onclick="deleteItem('${item.id}')" style="color:#991b1b">删除</button>
+    </div>`;
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+// Add / Edit
+function openAdd() {
+  editId = null; myScore = 0;
+  document.getElementById('modal-title').textContent = '新增记录';
+  ['f-douban','f-title','f-cover','f-creator','f-year','f-dscore','f-tags','f-desc','f-note'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('f-type').value = 'movie';
+  document.getElementById('f-status').value = 'want';
+  document.getElementById('fetch-hint').textContent = '';
+  document.getElementById('fetch-hint').className = 'fetch-hint';
+  document.getElementById('fetch-btn').disabled = false;
+  document.getElementById('fetch-btn').textContent = '自动填充';
+  renderStarPicker(0);
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function openEdit(id) {
+  const item = items.find(i=>i.id===id);
+  if (!item) return;
+  editId = id; myScore = item.myScore || 0;
+  document.getElementById('modal-title').textContent = '编辑记录';
+  document.getElementById('f-douban').value = item.douban||'';
+  document.getElementById('f-title').value = item.title||'';
+  document.getElementById('f-cover').value = item.cover||'';
+  document.getElementById('f-creator').value = item.creator||'';
+  document.getElementById('f-year').value = item.year||'';
+  document.getElementById('f-dscore').value = item.dscore||'';
+  document.getElementById('f-type').value = item.type||'movie';
+  document.getElementById('f-status').value = item.status||'want';
+  document.getElementById('f-tags').value = (item.tags||[]).join(', ');
+  document.getElementById('f-desc').value = item.desc||'';
+  document.getElementById('f-note').value = item.note||'';
+  document.getElementById('fetch-hint').textContent = '';
+  document.getElementById('fetch-btn').disabled = false;
+  document.getElementById('fetch-btn').textContent = '重新填充';
+  renderStarPicker(myScore);
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function renderStarPicker(n) {
+  myScore = n;
+  const r = document.getElementById('star-picker');
+  r.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const s = document.createElement('span');
+    s.className = 'sp-star' + (i <= n ? ' lit' : '');
+    s.textContent = '★';
+    (v => { s.onclick = () => renderStarPicker(v); })(i);
+    r.appendChild(s);
+  }
+}
+
+async function fetchDouban() {
+  const url = document.getElementById('f-douban').value.trim();
+  const hint = document.getElementById('fetch-hint');
+  const btn = document.getElementById('fetch-btn');
+  if (!url) { hint.textContent = '请先粘贴豆瓣链接'; hint.className='fetch-hint hint-err'; return; }
+  btn.disabled = true; btn.textContent = '识别中…';
+  hint.textContent = '正在通过 AI 识别豆瓣内容…'; hint.className = 'fetch-hint';
+  const isBook = url.includes('book.douban.com');
+  const idMatch = url.match(/subject\/(\d+)/);
+  const sid = idMatch ? idMatch[1] : '';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 600,
+        messages: [{ role: 'user', content: `Based on this Douban URL, return ONLY a valid JSON object, no markdown, no explanation:
+URL: ${url}
+Douban ID: ${sid}
+Type: ${isBook?'book':'movie'}
+
+JSON format:
+{"title":"","creator":"","year":"","dscore":"","desc":"","tags":[],"type":"${isBook?'book':'movie'}"}
+
+- title: Chinese title preferred
+- creator: director for movie, author for book
+- year: string like "2023"
+- dscore: string like "8.5" or ""
+- desc: 1-2 sentence Chinese summary
+- tags: 2-3 Chinese genre tags like ["悬疑","犯罪"]
+Use your knowledge if you recognize the Douban ID. Empty string if unknown.` }]
+      })
+    });
+    const data = await res.json();
+    const text = (data.content||[]).map(c=>c.text||'').join('');
+    const clean = text.replace(/```json|```/g,'').trim();
+    const p = JSON.parse(clean);
+    if (p.title) document.getElementById('f-title').value = p.title;
+    if (p.creator) document.getElementById('f-creator').value = p.creator;
+    if (p.year) document.getElementById('f-year').value = p.year;
+    if (p.dscore) document.getElementById('f-dscore').value = p.dscore;
+    if (p.desc) document.getElementById('f-desc').value = p.desc;
+    if (p.tags?.length) document.getElementById('f-tags').value = p.tags.join(', ');
+    if (p.type) document.getElementById('f-type').value = p.type;
+    hint.textContent = '✓ 填充完成，请检查并补充~'; hint.className = 'fetch-hint hint-ok';
+    btn.textContent = '重新填充'; btn.disabled = false;
+  } catch(e) {
+    hint.textContent = '识别失败（建议用 python3 -m http.server 8080 在本地开启服务后使用）'; hint.className = 'fetch-hint hint-err';
+    btn.textContent = '重试'; btn.disabled = false;
+  }
+}
+
+function saveItem() {
+  const title = document.getElementById('f-title').value.trim();
+  if (!title) { alert('请填写标题'); return; }
+  const tags = document.getElementById('f-tags').value.split(/[,，]/).map(t=>t.trim()).filter(Boolean);
+  const now = Date.now();
+  const item = {
+    id: editId || uid(),
+    type: document.getElementById('f-type').value,
+    douban: document.getElementById('f-douban').value.trim(),
+    title, cover: document.getElementById('f-cover').value.trim(),
+    creator: document.getElementById('f-creator').value.trim(),
+    year: document.getElementById('f-year').value.trim(),
+    dscore: document.getElementById('f-dscore').value.trim(),
+    status: document.getElementById('f-status').value,
+    myScore, tags,
+    desc: document.getElementById('f-desc').value.trim(),
+    note: document.getElementById('f-note').value.trim(),
+    addedAt: editId ? (items.find(i=>i.id===editId)?.addedAt||now) : now
+  };
+  items = editId ? items.map(i=>i.id===editId?item:i) : [item,...items];
+  save(); closeModal('modal-overlay'); render();
+  if (currentNav === 'stats') renderStats();
+}
+
+function deleteItem(id) {
+  if (!confirm('确认删除这条记录？')) return;
+  items = items.filter(i=>i.id!==id);
+  save(); closeModal('detail-overlay'); render();
+}
+
+// Share
+function openShare() {
+  const count = items.length;
+  const done = items.filter(i=>i.status==='done').length;
+  document.getElementById('share-preview-text').textContent = `共 ${count} 条记录 · 已完成 ${done} 条`;
+  const encoded = btoa(JSON.stringify(items));
+  const shareUrl = location.href.split('#')[0] + '#share=' + encoded;
+  document.getElementById('share-link-input').value = shareUrl;
+  document.getElementById('share-overlay').classList.add('open');
+}
+function copyShareLink() {
+  const input = document.getElementById('share-link-input');
+  input.select();
+  navigator.clipboard.writeText(input.value).then(()=>{
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '已复制!';
+    setTimeout(()=>btn.textContent='复制',2000);
+  });
+}
+
+// Modal helpers
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.getElementById(id).style.display=''; }
+function overlayClick(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+
+// Init
+load();
+if (!checkShareView()) {
+  render();
+}
+</script>
+</body>
+</html>

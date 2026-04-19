@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Little shelter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --cream:#faf8f3;--cream2:#f3f0e8;--cream3:#ede9de;--cream4:#e5e0d5;
+      --ink:#1c1917;--ink2:#44403c;--ink3:#78716c;--ink4:#a8a29e;--ink5:#d6d0c8;
+      --border:#e5e0d5;--border2:#d6cfc3;
+      --pink:#fce7f3;--pink-t:#9d174d;
+      --blue:#dbeafe;--blue-t:#1e40af;
+      --green:#dcfce7;--green-t:#166534;
+      --amber:#fef3c7;--amber-t:#92400e;
+      --purple:#ede9fe;--purple-t:#5b21b6;
+      --teal:#ccfbf1;--teal-t:#115e59;
+      --red:#fee2e2;--red-t:#991b1b;
+      --orange:#ffedd5;--orange-t:#9a3412;
+      --r:16px;--rsm:10px;--rlg:24px;
+      --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+      --shadow-md:0 4px 16px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:15px}
+    body{font-family:'Noto Sans SC',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}
+    .page{display:flex;min-height:100vh}
+
+    .sidebar{width:220px;flex-shrink:0;background:var(--cream2);border-right:1px solid var(--border);padding:2rem 1.25rem;display:flex;flex-direction:column;gap:1.5rem;position:sticky;top:0;height:100vh;overflow-y:auto}
+    .logo{font-family:'Noto Serif SC',serif;font-size:17px;font-weight:700;color:var(--ink)}
+    .logo span{display:block;font-size:10px;font-weight:400;color:var(--ink4);font-family:'Noto Sans SC',sans-serif;margin-top:2px;letter-spacing:.8px}
+    .nav{display:flex;flex-direction:column;gap:2px}
+    .nav-section{font-size:10px;letter-spacing:1px;color:var(--ink4);text-transform:uppercase;padding:0 10px;margin:10px 0 4px}
+    .nav-item{padding:8px 10px;border-radius:var(--rsm);font-size:13px;color:var(--ink3);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px;border:none;background:none;width:100%;text-align:left}
+    .nav-item:hover{background:var(--cream3);color:var(--ink)}
+    .nav-item.active{background:var(--ink);color:#fff}
+    .nav-icon{font-size:14px;width:18px;text-align:center}
+    .sidebar-mini-stats{margin-top:auto;background:var(--cream3);border-radius:var(--r);padding:14px}
+    .sms-title{font-size:10px;color:var(--ink4);letter-spacing:.8px;margin-bottom:10px}
+    .sms-row{display:flex;justify-content:space-between;margin-bottom:5px}
+    .sms-label{font-size:12px;color:var(--ink3)}
+    .sms-val{font-size:12px;font-weight:500;color:var(--ink)}
+
+    .main{flex:1;min-width:0;padding:2rem 2.5rem;max-width:100%}
+    .main-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.75rem;gap:1rem}
+    .page-title{font-family:'Noto Serif SC',serif;font-size:24px;font-weight:700;color:var(--ink);line-height:1.2}
+    .page-sub{font-size:13px;color:var(--ink4);margin-top:3px}
+    .header-btns{display:flex;gap:8px;flex-shrink:0}
+    .btn{padding:8px 18px;border-radius:var(--rsm);font-size:13px;cursor:pointer;transition:all .15s;border:1px solid transparent;font-family:inherit;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+    .btn-primary{background:var(--ink);color:#fff}
+    .btn-primary:hover{background:#2c2825}
+    .btn-outline{background:#fff;color:var(--ink2);border-color:var(--border2)}
+    .btn-outline:hover{border-color:var(--ink3)}
+    .btn-ghost{background:transparent;color:var(--ink3);border-color:transparent}
+    .btn-ghost:hover{background:var(--cream2)}
+    .btn-sm{padding:5px 12px;font-size:12px}
+    .btn-danger{background:var(--red);color:var(--red-t);border-color:transparent}
+
+    .toolbar{display:flex;gap:10px;margin-bottom:1.25rem;align-items:center;flex-wrap:wrap}
+    .search-wrap{flex:1;min-width:180px;position:relative}
+    .search-wrap input{width:100%;padding:8px 12px 8px 36px;border-radius:var(--rsm);border:1px solid var(--border);background:#fff;font-size:13px;color:var(--ink);font-family:inherit;outline:none;transition:border .15s}
+    .search-wrap input:focus{border-color:var(--ink3)}
+    .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink4);font-size:13px;pointer-events:none}
+    .filter-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem}
+    .pill{padding:5px 14px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--ink3);transition:all .15s}
+    .pill:hover{border-color:var(--ink3);color:var(--ink)}
+    .pill.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .sort-select{padding:7px 11px;border-radius:var(--rsm);border:1px solid var(--border);background:#fff;font-size:12px;color:var(--ink3);font-family:inherit;cursor:pointer;outline:none}
+
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+    .card{background:#fff;border-radius:var(--r);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
+    .card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--border2)}
+    .card-cover{width:100%;aspect-ratio:2/3;background:var(--cream2);position:relative;overflow:hidden}
+    .card-cover img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+    .card:hover .card-cover img{transform:scale(1.04)}
+    .cover-ph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+    .cover-ph-icon{font-size:26px;opacity:.35}
+    .cover-ph-title{font-size:11px;font-weight:500;color:var(--ink3);padding:0 10px;text-align:center;line-height:1.4}
+    .card-badge{position:absolute;top:7px;left:7px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500}
+    .card-mood{position:absolute;top:7px;right:7px;font-size:14px;background:rgba(255,255,255,.85);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+    .card-remind{position:absolute;bottom:7px;right:7px;background:var(--amber);color:var(--amber-t);font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500}
+    .card-body{padding:10px 11px 12px}
+    .card-title{font-size:13px;font-weight:500;line-height:1.4;color:var(--ink);margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .card-meta{font-size:11px;color:var(--ink4);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .card-score{display:flex;align-items:center;gap:3px}
+    .stars-sm{color:#f59e0b;font-size:10px;letter-spacing:0}
+    .score-txt{font-size:11px;color:var(--ink3)}
+    .card-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:5px}
+    .card-snippet{font-size:11px;color:var(--ink3);line-height:1.55;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .tag{font-size:10px;padding:2px 7px;border-radius:8px}
+    .rewatch-badge{font-size:10px;color:var(--purple-t);background:var(--purple);padding:2px 7px;border-radius:8px;margin-top:5px;display:inline-block}
+
+    .s-want{background:var(--blue);color:var(--blue-t)}
+    .s-progress{background:var(--amber);color:var(--amber-t)}
+    .s-done{background:var(--green);color:var(--green-t)}
+    .s-drop{background:var(--cream3);color:var(--ink3)}
+
+    .tc0{background:var(--pink);color:var(--pink-t)}
+    .tc1{background:var(--blue);color:var(--blue-t)}
+    .tc2{background:var(--green);color:var(--green-t)}
+    .tc3{background:var(--amber);color:var(--amber-t)}
+    .tc4{background:var(--purple);color:var(--purple-t)}
+    .tc5{background:var(--teal);color:var(--teal-t)}
+
+    .empty{grid-column:1/-1;text-align:center;padding:5rem 1rem;color:var(--ink4)}
+    .empty-icon{font-size:44px;margin-bottom:12px}
+    .empty-text{font-size:15px;color:var(--ink3);margin-bottom:4px}
+    .empty-sub{font-size:13px}
+
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:200;overflow-y:auto;padding:2rem 1rem;align-items:flex-start;justify-content:center}
+    .overlay.open{display:flex}
+    .modal{background:var(--cream);border-radius:var(--rlg);width:100%;max-width:580px;padding:2rem;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:su .2s ease}
+    .modal-sm{max-width:420px}
+    @keyframes su{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    .modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+    .modal-title{font-family:'Noto Serif SC',serif;font-size:17px;font-weight:700}
+    .modal-close{width:30px;height:30px;border-radius:50%;border:none;background:var(--cream3);cursor:pointer;font-size:15px;color:var(--ink3);display:flex;align-items:center;justify-content:center}
+    .modal-close:hover{background:var(--cream4);color:var(--ink)}
+    .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border)}
+
+    .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .fgrid .ffull{grid-column:1/-1}
+    .field{display:flex;flex-direction:column;gap:5px}
+    .field label{font-size:11px;color:var(--ink3);font-weight:500;letter-spacing:.3px}
+    .field input,.field textarea,.field select{padding:8px 11px;border-radius:var(--rsm);border:1px solid var(--border);background:#fff;font-size:13px;color:var(--ink);font-family:inherit;outline:none;transition:border .15s}
+    .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--ink3);background:var(--cream)}
+    .field textarea{resize:vertical;min-height:70px;line-height:1.6}
+
+    .dbox{background:#fff;border:1.5px dashed var(--border2);border-radius:var(--r);padding:1rem;margin-bottom:1.25rem}
+    .dbox-label{font-size:11px;color:var(--ink4);margin-bottom:6px;letter-spacing:.3px}
+    .drow{display:flex;gap:8px}
+    .drow input{flex:1;padding:8px 11px;border-radius:var(--rsm);border:1px solid var(--border);background:var(--cream);font-size:13px;color:var(--ink);font-family:inherit;outline:none}
+    .drow input:focus{border-color:var(--ink3)}
+    .dbtn{padding:8px 15px;border-radius:var(--rsm);background:var(--ink);color:#fff;border:none;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s}
+    .dbtn:hover{background:#2c2825}
+    .dbtn:disabled{background:var(--ink4);cursor:not-allowed}
+    .dhint{font-size:11px;margin-top:5px;min-height:15px}
+    .dhint.ok{color:#166534}
+    .dhint.err{color:#991b1b}
+
+    .spicker{display:flex;gap:3px;margin-top:2px}
+    .sp{font-size:22px;cursor:pointer;color:var(--cream4);transition:color .1s,transform .1s;line-height:1;user-select:none}
+    .sp:hover{transform:scale(1.15)}
+    .sp.lit{color:#f59e0b}
+
+    .mpicker{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+    .mood-opt{font-size:20px;cursor:pointer;padding:6px;border-radius:10px;border:2px solid transparent;transition:all .15s;line-height:1}
+    .mood-opt:hover{background:var(--cream3)}
+    .mood-opt.sel{border-color:var(--ink3);background:var(--cream2)}
+
+    .panel-overlay{display:none;position:fixed;inset:0;z-index:200}
+    .panel-overlay.open{display:block}
+    .panel-bg{position:absolute;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(3px)}
+    .panel{position:absolute;right:0;top:0;height:100vh;width:440px;background:var(--cream);box-shadow:-8px 0 32px rgba(0,0,0,.12);overflow-y:auto;padding:2rem;animation:si .2s ease}
+    @keyframes si{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
+    .panel-close{position:absolute;top:1.25rem;right:1.25rem;width:30px;height:30px;border-radius:50%;background:var(--cream3);border:none;cursor:pointer;font-size:15px;color:var(--ink3);display:flex;align-items:center;justify-content:center}
+    .panel-close:hover{background:var(--cream4)}
+    .panel-cover{width:100%;max-height:220px;object-fit:cover;border-radius:var(--r);margin-bottom:1.25rem;background:var(--cream2)}
+    .panel-cover-ph{width:100%;height:160px;background:var(--cream2);border-radius:var(--r);margin-bottom:1.25rem;display:flex;align-items:center;justify-content:center;font-size:40px}
+    .panel-title{font-family:'Noto Serif SC',serif;font-size:20px;font-weight:700;line-height:1.4;margin-bottom:.5rem}
+    .panel-meta{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:1rem}
+    .meta-pill{font-size:11px;padding:2px 9px;background:var(--cream2);border-radius:20px;color:var(--ink3)}
+    .panel-section{margin-bottom:1.25rem}
+    .panel-section-title{font-size:10px;color:var(--ink4);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+    .panel-text{font-size:13px;color:var(--ink2);line-height:1.8}
+    .score-big{font-size:30px;font-weight:700;color:#f59e0b;font-family:'Noto Serif SC',serif}
+    .panel-actions{display:flex;gap:8px;padding-top:1.25rem;border-top:1px solid var(--border);margin-top:1.5rem}
+
+    .quote-item{background:#fff;border-radius:var(--rsm);border-left:3px solid var(--amber);padding:.75rem 1rem;margin-bottom:8px;position:relative}
+    .quote-text{font-size:13px;color:var(--ink2);line-height:1.7;font-style:italic}
+    .quote-del{position:absolute;top:6px;right:8px;background:none;border:none;color:var(--ink5);cursor:pointer;font-size:12px}
+    .quote-del:hover{color:var(--red-t)}
+    .add-item-row{display:flex;gap:8px;margin-top:8px}
+    .add-item-row input,.add-item-row textarea{flex:1;padding:7px 10px;border-radius:var(--rsm);border:1px solid var(--border);background:var(--cream);font-size:12px;font-family:inherit;color:var(--ink);outline:none}
+    .add-item-row button{padding:7px 12px;border-radius:var(--rsm);background:var(--ink);color:#fff;border:none;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit}
+
+    .rewatch-item{background:#fff;border-radius:var(--rsm);border:1px solid var(--border);padding:.75rem 1rem;margin-bottom:8px;position:relative}
+    .rewatch-date{font-size:11px;color:var(--ink4);margin-bottom:4px}
+    .rewatch-note{font-size:13px;color:var(--ink2);line-height:1.6}
+
+    .remind-info{display:flex;align-items:center;gap:8px;background:var(--amber);border-radius:var(--rsm);padding:8px 12px;font-size:12px;color:var(--amber-t)}
+
+    .timeline{padding:0}
+    .tl-year{font-family:'Noto Serif SC',serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:1.25rem;margin-top:2rem}
+    .tl-year:first-child{margin-top:0}
+    .tl-month-group{margin-bottom:1.5rem}
+    .tl-month{font-size:12px;color:var(--ink4);letter-spacing:.5px;margin-bottom:.75rem;display:flex;align-items:center;gap:10px}
+    .tl-month::after{content:'';flex:1;height:1px;background:var(--border)}
+    .tl-items{display:flex;flex-direction:column;gap:8px}
+    .tl-item{background:#fff;border-radius:var(--r);border:1px solid var(--border);padding:12px 14px;display:flex;gap:12px;cursor:pointer;transition:all .15s}
+    .tl-item:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+    .tl-item-cover{width:40px;height:56px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--cream2)}
+    .tl-item-cover-ph{width:40px;height:56px;border-radius:6px;flex-shrink:0;background:var(--cream2);display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.5}
+    .tl-item-body{flex:1;min-width:0}
+    .tl-item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .tl-item-title{font-size:14px;font-weight:500;line-height:1.3}
+    .tl-item-meta{font-size:11px;color:var(--ink4);margin-top:2px}
+    .tl-item-note{font-size:12px;color:var(--ink3);margin-top:5px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .tl-item-mood{font-size:16px}
+
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+    .stat-box{background:#fff;border-radius:var(--r);border:1px solid var(--border);padding:1.1rem}
+    .stat-num{font-family:'Noto Serif SC',serif;font-size:30px;font-weight:700;line-height:1}
+    .stat-label{font-size:11px;color:var(--ink4);margin-top:5px}
+    .stats-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .stats-box{background:#fff;border-radius:var(--r);border:1px solid var(--border);padding:1.25rem}
+    .stats-box h3{font-size:13px;font-weight:500;margin-bottom:1rem;color:var(--ink2)}
+    .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+    .bar-label{font-size:11px;color:var(--ink3);width:52px;text-align:right;flex-shrink:0}
+    .bar-track{flex:1;height:7px;background:var(--cream2);border-radius:4px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:4px;background:var(--ink);transition:width .5s}
+    .bar-val{font-size:10px;color:var(--ink4);width:20px;flex-shrink:0}
+    .top-item{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+    .top-rank{font-size:16px;font-weight:700;color:var(--ink5);width:20px;font-family:'Noto Serif SC',serif}
+    .top-rank.r1{color:#f59e0b}.top-rank.r2{color:var(--ink3)}.top-rank.r3{color:#92400e}
+    .top-info{flex:1;min-width:0}
+    .top-title{font-size:13px;font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .top-meta{font-size:11px;color:var(--ink4)}
+    .top-score{font-size:13px;color:#f59e0b;font-weight:600}
+
+    .mood-stat-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .mood-stat-emoji{font-size:16px;width:24px;text-align:center}
+
+    .view-shell{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;box-shadow:var(--shadow)}
+    .view-shell + .view-shell{margin-top:12px}
+    .view-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:1rem;flex-wrap:wrap}
+    .view-head h3{font-size:14px;font-weight:500;color:var(--ink2)}
+    .view-head p{font-size:12px;color:var(--ink4);line-height:1.6;margin-top:4px}
+    .quote-page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+    .quote-card{background:var(--cream);border:1px solid var(--border);border-radius:var(--r);padding:1rem;cursor:pointer;transition:all .15s}
+    .quote-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+    .quote-card-text{font-size:14px;line-height:1.8;color:var(--ink2);font-style:italic}
+    .quote-card-work{font-size:12px;color:var(--ink4);margin-top:10px}
+    .quote-card-meta{font-size:11px;color:var(--ink4);margin-top:4px}
+    .calendar-wrap{overflow-x:auto;padding-bottom:4px}
+    .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;min-width:780px}
+    .calendar-weekday{font-size:11px;color:var(--ink4);padding:0 4px;letter-spacing:.6px;text-transform:uppercase}
+    .calendar-day{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:10px;min-height:132px;display:flex;flex-direction:column;gap:8px}
+    .calendar-day.muted{opacity:.45}
+    .calendar-day.today{border-color:var(--ink3);box-shadow:var(--shadow)}
+    .calendar-day-head{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--ink3)}
+    .calendar-day-num{font-family:'Noto Serif SC',serif;font-size:15px;font-weight:700;color:var(--ink)}
+    .calendar-entry{background:var(--cream2);border-radius:10px;padding:6px 8px;cursor:pointer}
+    .calendar-entry-title{font-size:11px;font-weight:500;line-height:1.4;color:var(--ink)}
+    .calendar-entry-note{font-size:10px;line-height:1.5;color:var(--ink3);margin-top:3px}
+    .calendar-entry-mood{font-size:14px}
+    .calendar-empty{font-size:11px;color:var(--ink5)}
+    .about-story{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}
+    .about-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;box-shadow:var(--shadow)}
+    .about-card h3{font-size:14px;font-weight:500;color:var(--ink2);margin-bottom:10px}
+    .about-card p{font-size:13px;color:var(--ink2);line-height:1.9}
+    .about-quote{font-family:'Noto Serif SC',serif;font-size:20px;line-height:1.6;color:var(--ink)}
+    .about-small{font-size:12px;color:var(--ink4);margin-top:10px;line-height:1.7}
+
+    @media(max-width:768px){
+      .sidebar{display:none}
+      .main{padding:1.25rem}
+      .cards-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+      .stats-grid{grid-template-columns:repeat(2,1fr)}
+      .stats-2col{grid-template-columns:1fr}
+      .quote-page-grid{grid-template-columns:1fr}
+      .about-story{grid-template-columns:1fr}
+      .panel{width:100%}
+      .fgrid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="sidebar">
+      <div class="logo">My Little shelter<span>where I keep the things that keep me</span></div>
+      <nav class="nav">
+        <div class="nav-section">浏览</div>
+        <button class="nav-item active" id="nav-all" onclick="setNav('all')"><span class="nav-icon">✦</span>全部</button>
+        <button class="nav-item" id="nav-movie" onclick="setNav('movie')"><span class="nav-icon">🎬</span>电影</button>
+        <button class="nav-item" id="nav-tv" onclick="setNav('tv')"><span class="nav-icon">📺</span>电视剧</button>
+        <button class="nav-item" id="nav-anime" onclick="setNav('anime')"><span class="nav-icon">✨</span>动漫</button>
+        <button class="nav-item" id="nav-documentary" onclick="setNav('documentary')"><span class="nav-icon">🎞️</span>纪录片</button>
+        <button class="nav-item" id="nav-book" onclick="setNav('book')"><span class="nav-icon">📚</span>书籍</button>
+        <div class="nav-section">状态</div>
+        <button class="nav-item" id="nav-want" onclick="setNav('want')"><span class="nav-icon">🔖</span>待看</button>
+        <button class="nav-item" id="nav-progress" onclick="setNav('progress')"><span class="nav-icon">⏳</span>正在看/读</button>
+        <button class="nav-item" id="nav-done" onclick="setNav('done')"><span class="nav-icon">✅</span>已看</button>
+        <div class="nav-section">视图</div>
+        <button class="nav-item" id="nav-timeline" onclick="setNav('timeline')"><span class="nav-icon">📅</span>时间线</button>
+        <button class="nav-item" id="nav-quotes" onclick="setNav('quotes')"><span class="nav-icon">💬</span>金句</button>
+        <button class="nav-item" id="nav-calendar" onclick="setNav('calendar')"><span class="nav-icon">🗓</span>心情日历</button>
+        <button class="nav-item" id="nav-stats" onclick="setNav('stats')"><span class="nav-icon">📊</span>统计</button>
+        <button class="nav-item" id="nav-about" onclick="setNav('about')"><span class="nav-icon">☁️</span>关于</button>
+      </nav>
+      <div class="sidebar-mini-stats" id="sidebar-mini-stats"></div>
+    </aside>
+
+    <main class="main">
+      <div class="main-header">
+        <div>
+          <div class="page-title" id="page-title">Vous avez trouvé un très bon refuge</div>
+          <div class="page-sub" id="page-sub">您找到了一个很好的藏身之处</div>
+        </div>
+        <div class="header-btns">
+          <button class="btn btn-outline" onclick="openExport()">💾 导出</button>
+          <button class="btn btn-outline" onclick="openImport()">📥 导入</button>
+          <button class="btn btn-primary" onclick="openAdd()">＋ 新增</button>
+        </div>
+      </div>
+
+      <div id="view-cards">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="搜索标题、导演/作者、标签…" oninput="render()" />
+          </div>
+          <select class="sort-select" id="sort-select" onchange="render()">
+            <option value="date">最新添加</option>
+            <option value="score">我的评分</option>
+            <option value="dscore">豆瓣评分</option>
+            <option value="title">标题排序</option>
+          </select>
+        </div>
+        <div class="filter-pills" id="filter-pills"></div>
+        <div class="cards-grid" id="cards-grid"></div>
+      </div>
+
+      <div id="view-timeline" style="display:none">
+        <div class="timeline" id="timeline-content"></div>
+      </div>
+
+      <div id="view-stats" style="display:none">
+        <div id="stats-content"></div>
+      </div>
+
+      <div id="view-quotes" style="display:none">
+        <div id="quotes-content"></div>
+      </div>
+
+      <div id="view-calendar" style="display:none">
+        <div id="calendar-content"></div>
+      </div>
+
+      <div id="view-about" style="display:none">
+        <div id="about-content"></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="overlay" id="modal-add" onclick="bgClose(event,'modal-add')">
+    <div class="modal">
+      <div class="modal-hd">
+        <div class="modal-title" id="modal-add-title">新增记录</div>
+        <button class="modal-close" onclick="closeOverlay('modal-add')">✕</button>
+      </div>
+      <div class="dbox">
+        <div class="dbox-label">豆瓣链接 — 粘贴后点自动填充</div>
+        <div class="drow">
+          <input type="text" id="f-douban" placeholder="https://movie.douban.com/subject/…" />
+          <button class="dbtn" id="fetch-btn" onclick="fetchDouban()">自动填充</button>
+        </div>
+        <div class="dhint" id="fetch-hint"></div>
+      </div>
+      <div class="fgrid">
+        <div class="field ffull"><label>标题 *</label><input type="text" id="f-title" placeholder="片名 / 书名" /></div>
+        <div class="field ffull"><label>封面图链接</label><input type="text" id="f-cover" placeholder="https://… （可留空）" /></div>
+        <div class="field"><label>导演 / 作者</label><input type="text" id="f-creator" /></div>
+        <div class="field"><label>年份</label><input type="text" id="f-year" placeholder="2024" /></div>
+        <div class="field">
+          <label>分类</label>
+          <select id="f-type">
+            <option value="movie">电影</option>
+            <option value="tv">电视剧</option>
+            <option value="anime">动漫</option>
+            <option value="documentary">纪录片</option>
+            <option value="book">书籍</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>状态</label>
+          <select id="f-status">
+            <option value="want">想看 / 想读</option>
+            <option value="progress">正在看 / 正在读</option>
+            <option value="done">已看 / 已读</option>
+            <option value="drop">搁置</option>
+          </select>
+        </div>
+        <div class="field"><label>豆瓣评分</label><input type="text" id="f-dscore" placeholder="8.5" /></div>
+        <div class="field"><label>标签（逗号分隔）</label><input type="text" id="f-tags" placeholder="悬疑, 犯罪" /></div>
+        <div class="field ffull"><label>我的评分（点星星）</label><div class="spicker" id="star-picker"></div></div>
+        <div class="field ffull">
+          <label>观看心情</label>
+          <div class="mpicker" id="mood-picker"></div>
+        </div>
+        <div class="field ffull" id="remind-field">
+          <label>观看提醒（仅想看状态）</label>
+          <input type="date" id="f-remind" />
+        </div>
+        <div class="field ffull" id="progress-field" style="display:none">
+          <label>阅读进度（页数）</label>
+          <input type="text" id="f-progress" placeholder="已读至第 xxx 页" />
+        </div>
+        <div class="field ffull"><label>简介</label><textarea id="f-desc" placeholder="剧情/内容简介…"></textarea></div>
+        <div class="field ffull"><label>随手记</label><textarea id="f-quick-note" placeholder="一句话也行，记下看到一半时脑子里飘过的念头…"></textarea></div>
+        <div class="field ffull"><label>观后感 / 读后感</label><textarea id="f-note" placeholder="写下你的感受…"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeOverlay('modal-add')">取消</button>
+        <button class="btn btn-primary" id="save-btn" onclick="saveItem()">保存记录</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-overlay" id="panel-overlay">
+    <div class="panel-bg" onclick="closeOverlay('panel-overlay')"></div>
+    <div class="panel">
+      <button class="panel-close" onclick="closeOverlay('panel-overlay')">✕</button>
+      <div id="panel-content"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="modal-export" onclick="bgClose(event,'modal-export')">
+    <div class="modal modal-sm">
+      <div class="modal-hd">
+        <div class="modal-title">导出备份</div>
+        <button class="modal-close" onclick="closeOverlay('modal-export')">✕</button>
+      </div>
+      <p style="font-size:13px;color:var(--ink3);line-height:1.7;margin-bottom:1.25rem">将所有记录导出为 JSON 文件，保存到本地。导入时选择该文件即可恢复数据。</p>
+      <div id="export-preview" style="background:#fff;border-radius:var(--rsm);border:1px solid var(--border);padding:12px;font-size:12px;color:var(--ink3);margin-bottom:1.25rem"></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeOverlay('modal-export')">取消</button>
+        <button class="btn btn-primary" onclick="doExport()">💾 下载 JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="modal-import" onclick="bgClose(event,'modal-import')">
+    <div class="modal modal-sm">
+      <div class="modal-hd">
+        <div class="modal-title">导入数据</div>
+        <button class="modal-close" onclick="closeOverlay('modal-import')">✕</button>
+      </div>
+      <p style="font-size:13px;color:var(--ink3);line-height:1.7;margin-bottom:1rem">选择之前导出的 JSON 文件。<strong style="color:var(--red-t)">导入会覆盖现有数据</strong>，请先导出备份。</p>
+      <div class="field" style="margin-bottom:1.25rem">
+        <label>选择 JSON 文件</label>
+        <input type="file" id="import-file" accept=".json" style="font-size:13px" />
+      </div>
+      <div id="import-msg" style="font-size:12px;min-height:16px"></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeOverlay('modal-import')">取消</button>
+        <button class="btn btn-danger" onclick="doImport()">导入（覆盖数据）</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="modal-rewatch" onclick="bgClose(event,'modal-rewatch')">
+    <div class="modal modal-sm">
+      <div class="modal-hd">
+        <div class="modal-title">添加重看记录</div>
+        <button class="modal-close" onclick="closeOverlay('modal-rewatch')">✕</button>
+      </div>
+      <div class="fgrid" style="grid-template-columns:1fr">
+        <div class="field"><label>重看日期</label><input type="date" id="rw-date" /></div>
+        <div class="field"><label>这次的感受</label><textarea id="rw-note" placeholder="和第一次看有什么不同的感受？"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeOverlay('modal-rewatch')">取消</button>
+        <button class="btn btn-primary" onclick="saveRewatch()">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/script.js"></script>
+</body>
+</html>

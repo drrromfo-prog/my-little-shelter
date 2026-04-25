@@ -2191,6 +2191,15 @@ function requireAdminAction(message = "Admin mode required for this action.") {
   return false;
 }
 
+function toggleAdminLogin() {
+  if (isAdminMode()) {
+    logoutAdmin();
+    return;
+  }
+
+  openAdminLogin();
+}
+
 function renderSessionMarkup({ mobile = false } = {}) {
   const modeClass = isAdminMode() ? "is-admin" : "is-guest";
   const modeLabel = isAdminMode() ? "Admin mode" : "Visitor mode";
@@ -2220,19 +2229,13 @@ function updateAdminUI() {
     utilityActions.hidden = !isAdminMode();
   }
 
-  const sidebarSession = document.getElementById("sidebar-session");
-  if (sidebarSession) {
-    sidebarSession.innerHTML = renderSessionMarkup();
+  const adminEntry = document.getElementById("admin-entry");
+  const adminEntryButton = document.getElementById("admin-entry-btn");
+  if (adminEntry) {
+    adminEntry.style.display = adminState.configured ? "" : "none";
   }
-
-  const brandSession = document.getElementById("brand-session");
-  if (brandSession) {
-    brandSession.innerHTML = renderSessionMarkup();
-  }
-
-  const mobileSession = document.getElementById("mobile-session");
-  if (mobileSession) {
-    mobileSession.innerHTML = renderSessionMarkup({ mobile: true });
+  if (adminEntryButton) {
+    adminEntryButton.textContent = isAdminMode() ? "✓ 已登录 · 退出" : "⚙ 管理";
   }
 
   document.querySelector(".toolbar-shell")?.classList.toggle("is-public", !isAdminMode());
@@ -2363,7 +2366,7 @@ function renderActiveView() {
   renderSidebarStats();
 
   const headerCopy = document.querySelector(".header-copy");
-  const toolbarShell = document.querySelector(".toolbar-shell");
+  const toolbarShell = document.getElementById("toolbar-wrap");
   const mainShell = document.querySelector(".main");
   const showFullHeader = !["quotes", "calendar", "stats"].includes(currentNav);
 
@@ -2371,7 +2374,7 @@ function renderActiveView() {
     headerCopy.style.display = "";
   }
   if (toolbarShell) {
-    toolbarShell.style.display = showFullHeader ? "" : "none";
+    toolbarShell.style.display = currentNav === "all" ? "" : "none";
   }
   if (mainShell) {
     mainShell.classList.toggle("is-compact", !showFullHeader);
@@ -2415,7 +2418,7 @@ function renderCards() {
 
   container.innerHTML = filtered.map((item) => {
     const tags = item.tags.slice(0, 3);
-    const creatorRow = [item.creator, item.year].filter(Boolean).join(" 路 ");
+    const creatorRow = [item.creator, item.year].filter(Boolean).join(" · ");
     const preview = itemPreviewText(item);
     const progress = item.status === "progress" && item.progress
       ? `<span class="progress-chip">${escapeHtml(item.progress)}</span>`
@@ -2487,7 +2490,7 @@ function renderQuotesPage() {
               <div class="quote-card" onclick="openDetail('${entry.id}')">
                 <div class="quote-card-text">“${escapeHtml(entry.quote)}”</div>
                 <div class="quote-card-work">— ${escapeHtml(entry.title)}</div>
-                <div class="quote-card-meta">${escapeHtml([categoryLabel(entry.type), entry.creator, entry.year].filter(Boolean).join(" 路 "))}</div>
+                <div class="quote-card-meta">${escapeHtml([categoryLabel(entry.type), entry.creator, entry.year].filter(Boolean).join(" · "))}</div>
               </div>
             `).join("")}
           </div>`
@@ -3022,6 +3025,7 @@ window.jumpCalendarToday = jumpCalendarToday;
 window.closeOverlay = closeOverlay;
 window.bgClose = bgClose;
 window.openAdminLogin = openAdminLogin;
+window.toggleAdminLogin = toggleAdminLogin;
 window.loginAdmin = loginAdmin;
 window.logoutAdmin = logoutAdmin;
 window.openMobileNav = openMobileNav;

@@ -8,6 +8,8 @@
   --ink-2: #4a433c;
   --ink-3: #756d64;
   --ink-4: #9c9388;
+  --border: var(--line);
+  --ink4: var(--ink-4);
   --line: rgba(109, 95, 81, 0.14);
   --line-strong: rgba(109, 95, 81, 0.22);
   --shadow-xs: 0 1px 2px rgba(34, 29, 23, 0.04), 0 4px 16px rgba(34, 29, 23, 0.04);
@@ -409,6 +411,7 @@ a {
   gap: 0.4rem;
 }
 
+.page-eyebrow,
 .eyebrow {
   display: none;
 }
@@ -416,7 +419,7 @@ a {
 .page-title {
   margin: 0;
   font-family: "Noto Serif SC", serif;
-  font-size: clamp(1.8rem, 3vw, 2.75rem);
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
   font-weight: 700;
   line-height: 1.14;
   letter-spacing: -0.02em;

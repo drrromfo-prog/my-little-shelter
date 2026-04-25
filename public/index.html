@@ -17,14 +17,11 @@
     <div class="page">
       <aside class="sidebar">
         <div class="brand-shell">
-          <div class="brand-mark">MLS</div>
           <div>
             <div class="logo">My Little Shelter</div>
             <div class="brand-subtitle">where I keep the things that keep me</div>
           </div>
         </div>
-
-        <div class="brand-session" id="brand-session"></div>
 
         <nav class="nav">
           <div class="nav-section">Browse</div>
@@ -47,7 +44,13 @@
         </nav>
 
         <div class="sidebar-mini-stats" id="sidebar-mini-stats"></div>
-        <div class="sidebar-session" id="sidebar-session"></div>
+        <div id="admin-entry" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+          <button id="admin-entry-btn" onclick="toggleAdminLogin()"
+            style="font-size:11px;color:var(--ink4);background:none;border:none;
+            cursor:pointer;padding:4px 0;font-family:inherit;transition:color .15s">
+            ⚙ 管理
+          </button>
+        </div>
       </aside>
 
       <main class="main">
@@ -57,7 +60,6 @@
             <div class="mobile-brand-title">My Little Shelter</div>
             <div class="mobile-brand-sub">personal shelf</div>
           </div>
-          <div class="mobile-session" id="mobile-session"></div>
         </div>
 
         <section class="header-shell">
@@ -67,7 +69,7 @@
             <p class="page-sub" id="page-sub">您找到了一个很好的藏身之处</p>
           </div>
 
-          <div class="toolbar-shell">
+          <div class="toolbar-shell" id="toolbar-wrap">
             <div class="toolbar-primary">
               <div class="search-wrap search-wrap-large">
                 <span class="search-icon">⌕</span>

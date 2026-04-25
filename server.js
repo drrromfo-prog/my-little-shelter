@@ -25,6 +25,11 @@ const SCREEN_CATEGORIES = CATEGORY_DISTRIBUTION_ORDER
   .filter(({ category }) => category !== "book")
   .map(({ category }) => category);
 const VALID_STATUSES = new Set(["pending", "progress", "done", "paused"]);
+const ADMIN_COOKIE_NAME = "mls_admin";
+const ADMIN_COOKIE_TTL_MS = 1000 * 60 * 60 * 24 * 14;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
+const ADMIN_SECRET = process.env.ADMIN_SECRET
+  || crypto.createHash("sha256").update(`${DB_PATH}|${ADMIN_PASSWORD}|my-little-shelter`).digest("hex");
 
 const DOUBAN_DESKTOP_HEADERS = {
   "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
@@ -258,6 +263,122 @@ const categoryDistributionStatement = db.prepare(`
 
 app.use(express.json({ limit: "5mb" }));
 app.use(express.static(PUBLIC_DIR));
+
+function parseCookies(cookieHeader) {
+  return String(cookieHeader || "")
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .reduce((cookies, part) => {
+      const index = part.indexOf("=");
+      if (index === -1) {
+        return cookies;
+      }
+
+      const key = decodeURIComponent(part.slice(0, index).trim());
+      const value = decodeURIComponent(part.slice(index + 1).trim());
+      cookies[key] = value;
+      return cookies;
+    }, {});
+}
+
+function createAdminSignature(baseValue) {
+  return crypto.createHmac("sha256", ADMIN_SECRET).update(baseValue).digest("hex");
+}
+
+function isSafeEqual(left, right) {
+  const leftBuffer = Buffer.from(String(left || ""));
+  const rightBuffer = Buffer.from(String(right || ""));
+
+  if (leftBuffer.length !== rightBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+function buildAdminCookieValue(expiresAt) {
+  const baseValue = `admin.${expiresAt}`;
+  return `${baseValue}.${createAdminSignature(baseValue)}`;
+}
+
+function isAdminAuthenticated(req) {
+  const rawValue = parseCookies(req.headers.cookie)[ADMIN_COOKIE_NAME];
+  if (!rawValue || !ADMIN_PASSWORD) {
+    return false;
+  }
+
+  const [scope, expiresAtText, signature] = String(rawValue).split(".");
+  if (scope !== "admin" || !expiresAtText || !signature) {
+    return false;
+  }
+
+  const expiresAt = Number(expiresAtText);
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+    return false;
+  }
+
+  return isSafeEqual(signature, createAdminSignature(`admin.${expiresAtText}`));
+}
+
+function serializeCookie(name, value, options = {}) {
+  const parts = [`${encodeURIComponent(name)}=${encodeURIComponent(value)}`];
+
+  if (options.maxAge !== undefined) {
+    parts.push(`Max-Age=${Math.max(0, Math.floor(options.maxAge))}`);
+  }
+  if (options.path) {
+    parts.push(`Path=${options.path}`);
+  }
+  if (options.httpOnly) {
+    parts.push("HttpOnly");
+  }
+  if (options.sameSite) {
+    parts.push(`SameSite=${options.sameSite}`);
+  }
+  if (options.secure) {
+    parts.push("Secure");
+  }
+
+  return parts.join("; ");
+}
+
+function shouldUseSecureCookie(req) {
+  return req.secure || req.headers["x-forwarded-proto"] === "https";
+}
+
+function setAdminCookie(req, res) {
+  const expiresAt = Date.now() + ADMIN_COOKIE_TTL_MS;
+  res.setHeader("Set-Cookie", serializeCookie(ADMIN_COOKIE_NAME, buildAdminCookieValue(expiresAt), {
+    maxAge: ADMIN_COOKIE_TTL_MS / 1000,
+    path: "/",
+    httpOnly: true,
+    sameSite: "Lax",
+    secure: shouldUseSecureCookie(req)
+  }));
+}
+
+function clearAdminCookie(req, res) {
+  res.setHeader("Set-Cookie", serializeCookie(ADMIN_COOKIE_NAME, "", {
+    maxAge: 0,
+    path: "/",
+    httpOnly: true,
+    sameSite: "Lax",
+    secure: shouldUseSecureCookie(req)
+  }));
+}
+
+function requireAdmin(req, res, next) {
+  if (isAdminAuthenticated(req)) {
+    next();
+    return;
+  }
+
+  res.status(401).json({
+    success: false,
+    error: "Admin login required"
+  });
+}
 
 class ValidationError extends Error {
   constructor(details) {
@@ -1104,7 +1225,54 @@ app.get("/healthz", (req, res) => {
   }
 });
 
-app.post("/api/items", (req, res) => {
+app.get("/api/admin/session", (req, res) => {
+  res.json({
+    success: true,
+    authenticated: isAdminAuthenticated(req),
+    configured: Boolean(ADMIN_PASSWORD)
+  });
+});
+
+app.post("/api/admin/login", (req, res) => {
+  try {
+    if (!ADMIN_PASSWORD) {
+      return res.status(503).json({
+        success: false,
+        error: "Admin login is not configured on this server"
+      });
+    }
+
+    const password = String(req.body?.password || "");
+    if (!isSafeEqual(password, ADMIN_PASSWORD)) {
+      return res.status(401).json({
+        success: false,
+        error: "Invalid admin password"
+      });
+    }
+
+    setAdminCookie(req, res);
+    res.json({
+      success: true,
+      authenticated: true
+    });
+  } catch (error) {
+    console.error("POST /api/admin/login error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Admin login failed"
+    });
+  }
+});
+
+app.post("/api/admin/logout", (req, res) => {
+  clearAdminCookie(req, res);
+  res.json({
+    success: true,
+    authenticated: false
+  });
+});
+
+app.post("/api/items", requireAdmin, (req, res) => {
   try {
     const payload = normalizePayload(req.body || {});
     const now = new Date().toISOString();
@@ -1128,7 +1296,7 @@ app.post("/api/items", (req, res) => {
   }
 });
 
-app.post("/api/items/import", (req, res) => {
+app.post("/api/items/import", requireAdmin, (req, res) => {
   try {
     const sourceItems = Array.isArray(req.body?.items) ? req.body.items : null;
     if (!sourceItems) {
@@ -1204,10 +1372,10 @@ function handleUpdateItem(req, res) {
   }
 }
 
-app.put("/api/items/:id", handleUpdateItem);
-app.patch("/api/items/:id", handleUpdateItem);
+app.put("/api/items/:id", requireAdmin, handleUpdateItem);
+app.patch("/api/items/:id", requireAdmin, handleUpdateItem);
 
-app.delete("/api/items/:id", (req, res) => {
+app.delete("/api/items/:id", requireAdmin, (req, res) => {
   try {
     const id = parseItemId(req.params.id);
     const result = deleteItemStatement.run(id);
@@ -1231,7 +1399,7 @@ app.delete("/api/items/:id", (req, res) => {
   }
 });
 
-app.delete("/api/items", (req, res) => {
+app.delete("/api/items", requireAdmin, (req, res) => {
   try {
     clearItemsStatement.run();
     res.json({
@@ -1341,7 +1509,7 @@ app.get("/api/image-proxy", async (req, res) => {
   }
 });
 
-app.get("/api/fetch-douban", async (req, res) => {
+app.get("/api/fetch-douban", requireAdmin, async (req, res) => {
   try {
     const doubanInfo = normalizeDoubanRequestUrl(req.query.url);
     if (!doubanInfo) {

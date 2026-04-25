@@ -12,6 +12,7 @@
   <div class="page-shell">
     <div class="ambient-layer ambient-layer-a"></div>
     <div class="ambient-layer ambient-layer-b"></div>
+    <div class="mobile-nav-scrim" id="mobile-nav-scrim" onclick="closeMobileNav()"></div>
 
     <div class="page">
       <aside class="sidebar">
@@ -44,9 +45,19 @@
         </nav>
 
         <div class="sidebar-mini-stats" id="sidebar-mini-stats"></div>
+        <div class="sidebar-session" id="sidebar-session"></div>
       </aside>
 
       <main class="main">
+        <div class="mobile-topbar">
+          <button class="mobile-nav-toggle" id="mobile-menu-btn" onclick="openMobileNav()" aria-label="Open navigation">☰</button>
+          <div class="mobile-brand">
+            <div class="mobile-brand-title">My Little Shelter</div>
+            <div class="mobile-brand-sub">personal shelf</div>
+          </div>
+          <div class="mobile-session" id="mobile-session"></div>
+        </div>
+
         <section class="header-shell">
           <div class="header-copy">
             <p class="eyebrow">personal cultural shelter</p>

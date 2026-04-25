@@ -4,7 +4,7 @@ let myMood = "";
 let editId = null;
 let currentNav = "all";
 let activePill = "type-all";
-let viewMode = "grid";
+let viewMode = "card";
 let adminState = {
   authenticated: false,
   configured: false
@@ -43,11 +43,11 @@ const MOODS = [
 const TAG_COLORS = ["tc0", "tc1", "tc2", "tc3", "tc4", "tc5"];
 
 const CATEGORY_META = {
-  movie: { label: "电影", icon: "🎞", defaultAccent: "#9d7a65" },
-  tv: { label: "电视剧", icon: "📺", defaultAccent: "#6f7d97" },
-  anime: { label: "动漫", icon: "✦", defaultAccent: "#9b82aa" },
-  documentary: { label: "纪录片", icon: "🜁", defaultAccent: "#7d8d76" },
-  book: { label: "书籍", icon: "📚", defaultAccent: "#b48f63" }
+  movie: { label: "电影", icon: "◎", defaultAccent: "#9d7a65" },
+  tv: { label: "电视剧", icon: "▤", defaultAccent: "#6f7d97" },
+  anime: { label: "动漫", icon: "◈", defaultAccent: "#9b82aa" },
+  documentary: { label: "纪录片", icon: "△", defaultAccent: "#7d8d76" },
+  book: { label: "书籍", icon: "◻", defaultAccent: "#b48f63" }
 };
 
 const CATEGORY_FILTER_ORDER = ["movie", "tv", "anime", "documentary", "book"];
@@ -75,7 +75,7 @@ const PAGE_COPY = {
   },
   book: {
     title: "Underlined",
-    subtitle: "阅读过的字会留在我身体里，像某个血小板"
+    subtitle: "读过的字会留在我身体里，像某个血小板"
   },
   want: {
     title: "Just...Not yet",
@@ -94,14 +94,20 @@ const PAGE_COPY = {
     subtitle: "被某句话击中的瞬间，想留住它"
   },
   calendar: {
-    title: "WhatIt Did To Me？",
+    title: "What It Did To Me?",
     subtitle: "它对我做了一些我无法描述的事。"
+  },
+  wall: {
+    title: "The Wall",
+    subtitle: "所有的它们，在这里"
   },
   stats: {
     title: "小小的，我的",
     subtitle: "不是宏大统计，更像一间会呼吸的私人档案室。"
   },
 };
+
+const VIEW_MODE_STORAGE_KEY = "mls:view-mode";
 
 const SHOWCASE_ITEMS = [
   {
@@ -655,11 +661,15 @@ function itemPreviewText(item) {
 }
 
 function categoryEmoji(type) {
-  return CATEGORY_META[type]?.icon || "🎞";
+  return CATEGORY_META[type]?.icon || "✦";
 }
 
 function categoryLabel(type) {
   return CATEGORY_META[type]?.label || "电影";
+}
+
+function typeSymbol(type) {
+  return CATEGORY_META[type]?.icon || "✦";
 }
 
 function formatScore(score) {
@@ -979,15 +989,65 @@ function applyDynamicColors() {
   });
 }
 
-function setViewMode(mode) {
-  viewMode = mode;
-  const container = document.getElementById("cards-grid");
-  if (container) {
-    container.className = mode === "list" ? "cards-list" : "cards-grid";
+function normalizeViewMode(mode) {
+  if (mode === "grid") {
+    return "card";
+  }
+  if (mode === "card" || mode === "wall" || mode === "list") {
+    return mode;
+  }
+  return "card";
+}
+
+function getStoredViewMode() {
+  try {
+    const stored = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    return stored ? normalizeViewMode(stored) : "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function getDefaultViewMode() {
+  return isAdminMode() ? (getStoredViewMode() || "card") : "wall";
+}
+
+function updateViewModeButtons() {
+  document.getElementById("view-card-btn")?.classList.toggle("is-active", viewMode === "card");
+  document.getElementById("view-wall-btn")?.classList.toggle("is-active", viewMode === "wall");
+  document.getElementById("view-list-btn")?.classList.toggle("is-active", viewMode === "list");
+}
+
+function syncViewModeForRole() {
+  viewMode = getDefaultViewMode();
+  updateViewModeButtons();
+}
+
+function setViewMode(mode, options = {}) {
+  const normalized = normalizeViewMode(mode);
+  const nextNav = currentNav === "wall" && normalized !== "wall" ? "all" : currentNav;
+  viewMode = normalized;
+
+  if (isAdminMode()) {
+    try {
+      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, normalized);
+    } catch (error) {
+      // ignore storage failures
+    }
   }
 
-  document.getElementById("view-grid-btn")?.classList.toggle("is-active", mode === "grid");
-  document.getElementById("view-list-btn")?.classList.toggle("is-active", mode === "list");
+  updateViewModeButtons();
+
+  if (options.silent) {
+    return;
+  }
+
+  if (nextNav !== currentNav) {
+    setNav(nextNav);
+    return;
+  }
+
+  renderActiveView();
 }
 
 function renderSidebarStats() {
@@ -1353,7 +1413,7 @@ function renderMoodCalendar() {
                 ${itemPreviewText(item) ? `<div class="calendar-entry-note">${escapeHtml(itemPreviewText(item))}</div>` : ""}
               </div>
             `).join("")
-          : '<div class="calendar-empty">这一天还没有留下痕迹。</div>'}
+          : ""}
         ${dayItems.length > 3 ? `<div class="calendar-empty">+${dayItems.length - 3} more</div>` : ""}
       </div>
     `;
@@ -1380,7 +1440,7 @@ function renderMoodCalendar() {
 }
 
 function setVisibleView(viewId) {
-  ["view-cards", "view-stats", "view-quotes", "view-calendar"].forEach((id) => {
+  ["view-cards", "view-wall", "view-compact-list", "view-stats", "view-quotes", "view-calendar"].forEach((id) => {
     const element = document.getElementById(id);
     if (element) {
       element.style.display = id === viewId ? "block" : "none";
@@ -1388,26 +1448,111 @@ function setVisibleView(viewId) {
   });
 }
 
+function renderBrowseEmptyState() {
+  const canManage = isAdminMode();
+  return `
+    <div class="empty">
+      <div class="empty-icon">${CATEGORY_META[currentNav] ? categoryEmoji(currentNav) : "✦"}</div>
+      <div class="empty-text">${canManage ? "This shelf is still waiting." : "This shelf is quiet for now."}</div>
+      <div class="empty-sub">${canManage ? "Start with the first piece you want to keep." : "There is nothing to browse here yet."}</div>
+      ${canManage ? '<div class="empty-actions"><button class="btn btn-primary" onclick="openAdd()">新增记录</button></div>' : ""}
+    </div>
+  `;
+}
+
+function formatAddedAtLabel(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function renderWall() {
+  const container = document.getElementById("poster-wall");
+  if (!container) {
+    return;
+  }
+
+  const { filtered, source } = getFilteredItems();
+  const list = filtered;
+
+  renderFilterSummary(filtered, source);
+  updateAmbientBackground(list.length > 0 ? list : source);
+
+  if (list.length === 0) {
+    container.innerHTML = renderBrowseEmptyState();
+    return;
+  }
+
+  container.innerHTML = list.map((item) => `
+    <div class="wall-item" onclick="openDetail('${item.id}')">
+      ${item.cover
+        ? `<img src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" loading="lazy" />`
+        : `<div class="wall-ph">${typeSymbol(item.type)}</div>`}
+      <div class="wall-overlay">
+        <div class="wall-title">${escapeHtml(item.title)}</div>
+        <div class="wall-meta">${item.rating ? `★ ${escapeHtml(formatScore(item.rating))}/10` : ""}${item.dscore ? `${item.rating ? " · " : ""}豆瓣 ${escapeHtml(item.dscore)}` : ""}</div>
+        <div class="wall-status s-${item.status}">${statusLabel(item.status, item.type)}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderCompactList() {
+  const container = document.getElementById("compact-list");
+  if (!container) {
+    return;
+  }
+
+  const { filtered, source } = getFilteredItems();
+  const list = filtered;
+
+  renderFilterSummary(filtered, source);
+  updateAmbientBackground(list.length > 0 ? list : source);
+
+  if (list.length === 0) {
+    container.innerHTML = renderBrowseEmptyState();
+    return;
+  }
+
+  container.innerHTML = list.map((item) => `
+    <button class="compact-row" onclick="openDetail('${item.id}')">
+      <span class="compact-type">${typeSymbol(item.type)} ${categoryLabel(item.type)}</span>
+      <span class="compact-title">${escapeHtml(item.title)}</span>
+      <span class="compact-year">${escapeHtml(item.year || formatAddedAtLabel(item.addedAt))}</span>
+      <span class="compact-score">${item.rating ? `★ ${escapeHtml(formatScore(item.rating))}` : ""}</span>
+      <span class="compact-status s-${item.status}">${statusLabel(item.status, item.type)}</span>
+    </button>
+  `).join("");
+}
+
+function renderBrowseView() {
+  renderFilterPills();
+
+  if (viewMode === "wall" || currentNav === "wall") {
+    setVisibleView("view-wall");
+    renderWall();
+    return;
+  }
+
+  if (viewMode === "list") {
+    setVisibleView("view-compact-list");
+    renderCompactList();
+    return;
+  }
+
+  setVisibleView("view-cards");
+  renderCards();
+}
+
 function renderActiveView() {
   renderSidebarStats();
-
-  const headerShell = document.querySelector(".header-shell");
-  const headerCopy = document.querySelector(".header-copy");
-  const toolbarShell = document.querySelector(".toolbar-shell");
-  const mainShell = document.querySelector(".main");
-  const showFullHeader = currentNav === "all";
-  if (headerShell) {
-    headerShell.style.display = "";
-  }
-  if (headerCopy) {
-    headerCopy.style.display = "";
-  }
-  if (toolbarShell) {
-    toolbarShell.style.display = showFullHeader ? "" : "none";
-  }
-  if (mainShell) {
-    mainShell.classList.toggle("is-compact", !showFullHeader);
-  }
 
   if (currentNav === "stats") {
     setVisibleView("view-stats");
@@ -1427,14 +1572,12 @@ function renderActiveView() {
     return;
   }
 
-  setVisibleView("view-cards");
-  render();
+  renderBrowseView();
 }
 
 function render() {
-  renderFilterPills();
   renderSidebarStats();
-  renderCards();
+  renderBrowseView();
 }
 
 function setPill(key) {
@@ -2111,6 +2254,7 @@ async function loadAdminSession() {
   }
 
   updateAdminUI();
+  syncViewModeForRole();
 }
 
 async function loginAdmin() {
@@ -2135,6 +2279,7 @@ async function loginAdmin() {
     });
     adminState.authenticated = true;
     updateAdminUI();
+    syncViewModeForRole();
     closeOverlay("modal-admin-login");
     renderActiveView();
   } catch (error) {
@@ -2157,6 +2302,7 @@ async function logoutAdmin() {
   } finally {
     adminState.authenticated = false;
     updateAdminUI();
+    syncViewModeForRole();
     closeOverlay("modal-add");
     closeOverlay("panel-overlay");
     renderActiveView();
@@ -2182,13 +2328,26 @@ function syncMobileNavOnResize() {
 function setNav(nav) {
   currentNav = nav;
 
-  if (nav === "all") {
+  if (nav === "all" || nav === "wall") {
     activePill = "type-all";
   } else if (CATEGORY_META[nav]) {
     activePill = `type-${nav}`;
   } else {
     activePill = "type-all";
   }
+
+  if (nav === "wall") {
+    viewMode = "wall";
+    if (isAdminMode()) {
+      try {
+        window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, "wall");
+      } catch (error) {
+        // ignore storage failures
+      }
+    }
+  }
+
+  updateViewModeButtons();
 
   document.querySelectorAll(".nav-item").forEach((button) => button.classList.remove("active"));
   document.getElementById(`nav-${nav}`)?.classList.add("active");
@@ -2206,7 +2365,7 @@ function renderActiveView() {
   const headerCopy = document.querySelector(".header-copy");
   const toolbarShell = document.querySelector(".toolbar-shell");
   const mainShell = document.querySelector(".main");
-  const showFullHeader = currentNav === "all";
+  const showFullHeader = !["quotes", "calendar", "stats"].includes(currentNav);
 
   if (headerCopy) {
     headerCopy.style.display = "";
@@ -2238,28 +2397,19 @@ function renderActiveView() {
     return;
   }
 
-  setVisibleView("view-cards");
-  render();
+  renderBrowseView();
 }
 
 function renderCards() {
   const container = document.getElementById("cards-grid");
   const { filtered, source } = getFilteredItems();
-  const canManage = isAdminMode();
+  container.className = "cards-grid";
 
   renderFilterSummary(filtered, source);
   updateAmbientBackground(filtered.length > 0 ? filtered : source);
-  setViewMode(viewMode);
 
   if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">${CATEGORY_META[currentNav] ? categoryEmoji(currentNav) : "✦"}</div>
-        <div class="empty-text">${canManage ? "This shelf is still waiting." : "This shelf is quiet for now."}</div>
-        <div class="empty-sub">${canManage ? "Start with the first piece you want to keep." : "There is nothing to browse here yet."}</div>
-        ${canManage ? '<div class="empty-actions"><button class="btn btn-primary" onclick="openAdd()">新增记录</button></div>' : ""}
-      </div>
-    `;
+    container.innerHTML = renderBrowseEmptyState();
     return;
   }
 
@@ -2837,7 +2987,7 @@ document.getElementById("f-type").addEventListener("change", updateFormFields);
 
 syncAdvancedFiltersFromControls();
 toggleAdvancedFilters(false);
-setViewMode("grid");
+syncViewModeForRole();
 ensureAdminLoginModal();
 loadAdminSession().then(loadItems);
 window.addEventListener("resize", syncMobileNavOnResize);
@@ -2846,6 +2996,8 @@ window.setNav = setNav;
 window.setPill = setPill;
 window.setCategoryTab = setCategoryTab;
 window.setViewMode = setViewMode;
+window.renderWall = renderWall;
+window.renderCompactList = renderCompactList;
 window.toggleAdvancedFilters = toggleAdvancedFilters;
 window.clearAdvancedFilters = clearAdvancedFilters;
 window.openAdd = openAdd;

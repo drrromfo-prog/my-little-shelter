@@ -29,21 +29,21 @@
         <nav class="nav">
           <div class="nav-section">Browse</div>
           <button class="nav-item active" id="nav-all" onclick="setNav('all')"><span class="nav-icon">✦</span><span>全部</span></button>
-          <button class="nav-item" id="nav-movie" onclick="setNav('movie')"><span class="nav-icon">🎞</span><span>电影</span></button>
-          <button class="nav-item" id="nav-tv" onclick="setNav('tv')"><span class="nav-icon">📺</span><span>电视剧</span></button>
-          <button class="nav-item" id="nav-anime" onclick="setNav('anime')"><span class="nav-icon">✦</span><span>动漫</span></button>
-          <button class="nav-item" id="nav-documentary" onclick="setNav('documentary')"><span class="nav-icon">🜁</span><span>纪录片</span></button>
-          <button class="nav-item" id="nav-book" onclick="setNav('book')"><span class="nav-icon">📚</span><span>书籍</span></button>
+          <button class="nav-item" id="nav-movie" onclick="setNav('movie')"><span class="nav-icon">◎</span><span>电影</span></button>
+          <button class="nav-item" id="nav-tv" onclick="setNav('tv')"><span class="nav-icon">▤</span><span>电视剧</span></button>
+          <button class="nav-item" id="nav-anime" onclick="setNav('anime')"><span class="nav-icon">◈</span><span>动漫</span></button>
+          <button class="nav-item" id="nav-documentary" onclick="setNav('documentary')"><span class="nav-icon">△</span><span>纪录片</span></button>
+          <button class="nav-item" id="nav-book" onclick="setNav('book')"><span class="nav-icon">◻</span><span>书籍</span></button>
 
           <div class="nav-section">Status</div>
-          <button class="nav-item" id="nav-want" onclick="setNav('want')"><span class="nav-icon">◌</span><span>待看 / 待读</span></button>
-          <button class="nav-item" id="nav-progress" onclick="setNav('progress')"><span class="nav-icon">◔</span><span>正在进行</span></button>
+          <button class="nav-item" id="nav-want" onclick="setNav('want')"><span class="nav-icon">○</span><span>待看 / 待读</span></button>
+          <button class="nav-item" id="nav-progress" onclick="setNav('progress')"><span class="nav-icon">◑</span><span>正在进行</span></button>
           <button class="nav-item" id="nav-done" onclick="setNav('done')"><span class="nav-icon">●</span><span>已看 / 已读</span></button>
 
           <div class="nav-section">Views</div>
-          <button class="nav-item" id="nav-quotes" onclick="setNav('quotes')"><span class="nav-icon">❞</span><span>金句</span></button>
-          <button class="nav-item" id="nav-calendar" onclick="setNav('calendar')"><span class="nav-icon">☷</span><span>心情日历</span></button>
-          <button class="nav-item" id="nav-stats" onclick="setNav('stats')"><span class="nav-icon">◫</span><span>统计</span></button>
+          <button class="nav-item" id="nav-quotes" onclick="setNav('quotes')"><span class="nav-icon">"</span><span>金句</span></button>
+          <button class="nav-item" id="nav-calendar" onclick="setNav('calendar')"><span class="nav-icon">◫</span><span>心情日历</span></button>
+          <button class="nav-item" id="nav-stats" onclick="setNav('stats')"><span class="nav-icon">≡</span><span>统计</span></button>
         </nav>
 
         <div class="sidebar-mini-stats" id="sidebar-mini-stats"></div>
@@ -76,8 +76,9 @@
 
               <div class="toolbar-actions">
                 <div class="view-toggle" aria-label="切换展示方式">
-                  <button class="btn btn-ghost btn-sm" id="view-grid-btn" onclick="setViewMode('grid')" title="网格视图">⊞</button>
-                  <button class="btn btn-ghost btn-sm" id="view-list-btn" onclick="setViewMode('list')" title="列表视图">☰</button>
+                  <button class="btn btn-ghost btn-sm" id="view-card-btn" onclick="setViewMode('card')" title="卡片视图">▣</button>
+                  <button class="btn btn-ghost btn-sm" id="view-wall-btn" onclick="setViewMode('wall')" title="海报墙视图">▦</button>
+                  <button class="btn btn-ghost btn-sm" id="view-list-btn" onclick="setViewMode('list')" title="紧凑列表视图">☰</button>
                 </div>
 
                 <select class="sort-select" id="sort-select" onchange="render()">
@@ -86,7 +87,7 @@
                   <option value="dscore">Douban rating</option>
                   <option value="title">Title</option>
                 </select>
-                <button class="btn btn-primary" onclick="openAdd()">新增记录</button>
+                <button class="btn btn-primary" id="primary-add-btn" onclick="openAdd()">新增记录</button>
               </div>
             </div>
 
@@ -163,6 +164,14 @@
         <section class="content-shell">
           <div id="view-cards">
             <div class="cards-grid" id="cards-grid"></div>
+          </div>
+
+          <div id="view-wall" style="display:none">
+            <div class="poster-wall" id="poster-wall"></div>
+          </div>
+
+          <div id="view-compact-list" style="display:none">
+            <div class="compact-list" id="compact-list"></div>
           </div>
 
           <div id="view-stats" style="display:none">
@@ -248,8 +257,7 @@
     </div>
   </div>
 
-  <div class="panel-overlay" id="panel-overlay">
-    <div class="panel-bg" onclick="closeOverlay('panel-overlay')"></div>
+  <div class="panel-overlay" id="panel-overlay" onclick="if(event.target===this)closeOverlay('panel-overlay')">
     <div class="panel">
       <button class="panel-close" onclick="closeOverlay('panel-overlay')">✕</button>
       <div id="panel-content"></div>

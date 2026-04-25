@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -25,22 +25,22 @@
 
         <nav class="nav">
           <div class="nav-section">Browse</div>
-          <button class="nav-item active" id="nav-all" onclick="setNav('all')"><span class="nav-icon">✦</span><span>全部</span></button>
-          <button class="nav-item" id="nav-movie" onclick="setNav('movie')"><span class="nav-icon">◎</span><span>电影</span></button>
-          <button class="nav-item" id="nav-tv" onclick="setNav('tv')"><span class="nav-icon">▤</span><span>电视剧</span></button>
-          <button class="nav-item" id="nav-anime" onclick="setNav('anime')"><span class="nav-icon">◈</span><span>动漫</span></button>
-          <button class="nav-item" id="nav-documentary" onclick="setNav('documentary')"><span class="nav-icon">△</span><span>纪录片</span></button>
-          <button class="nav-item" id="nav-book" onclick="setNav('book')"><span class="nav-icon">◻</span><span>书籍</span></button>
+          <button class="nav-item active" id="nav-all" onclick="setNav('all')"><span class="nav-icon">鉁?/span><span>鍏ㄩ儴</span></button>
+          <button class="nav-item" id="nav-movie" onclick="setNav('movie')"><span class="nav-icon">鈼?/span><span>鐢靛奖</span></button>
+          <button class="nav-item" id="nav-tv" onclick="setNav('tv')"><span class="nav-icon">鈻?/span><span>鐢佃鍓?/span></button>
+          <button class="nav-item" id="nav-anime" onclick="setNav('anime')"><span class="nav-icon">鈼?/span><span>鍔ㄦ极</span></button>
+          <button class="nav-item" id="nav-documentary" onclick="setNav('documentary')"><span class="nav-icon">鈻?/span><span>绾綍鐗?/span></button>
+          <button class="nav-item" id="nav-book" onclick="setNav('book')"><span class="nav-icon">鈼?/span><span>涔︾睄</span></button>
 
           <div class="nav-section">Status</div>
-          <button class="nav-item" id="nav-want" onclick="setNav('want')"><span class="nav-icon">○</span><span>待看 / 待读</span></button>
-          <button class="nav-item" id="nav-progress" onclick="setNav('progress')"><span class="nav-icon">◑</span><span>正在进行</span></button>
-          <button class="nav-item" id="nav-done" onclick="setNav('done')"><span class="nav-icon">●</span><span>已看 / 已读</span></button>
+          <button class="nav-item" id="nav-want" onclick="setNav('want')"><span class="nav-icon">鈼?/span><span>寰呯湅 / 寰呰</span></button>
+          <button class="nav-item" id="nav-progress" onclick="setNav('progress')"><span class="nav-icon">鈼?/span><span>姝ｅ湪杩涜</span></button>
+          <button class="nav-item" id="nav-done" onclick="setNav('done')"><span class="nav-icon">鈼?/span><span>宸茬湅 / 宸茶</span></button>
 
           <div class="nav-section">Views</div>
-          <button class="nav-item" id="nav-quotes" onclick="setNav('quotes')"><span class="nav-icon">"</span><span>金句</span></button>
-          <button class="nav-item" id="nav-calendar" onclick="setNav('calendar')"><span class="nav-icon">◫</span><span>心情日历</span></button>
-          <button class="nav-item" id="nav-stats" onclick="setNav('stats')"><span class="nav-icon">≡</span><span>统计</span></button>
+          <button class="nav-item" id="nav-quotes" onclick="setNav('quotes')"><span class="nav-icon">"</span><span>閲戝彞</span></button>
+          <button class="nav-item" id="nav-calendar" onclick="setNav('calendar')"><span class="nav-icon">鈼?/span><span>蹇冩儏鏃ュ巻</span></button>
+          <button class="nav-item" id="nav-stats" onclick="setNav('stats')"><span class="nav-icon">鈮?/span><span>缁熻</span></button>
         </nav>
 
         <div class="sidebar-mini-stats" id="sidebar-mini-stats"></div>
@@ -48,14 +48,14 @@
           <button id="admin-entry-btn" onclick="toggleAdminLogin()"
             style="font-size:11px;color:var(--ink4);background:none;border:none;
             cursor:pointer;padding:4px 0;font-family:inherit;transition:color .15s">
-            ⚙ 管理
+            鈿?绠＄悊
           </button>
         </div>
       </aside>
 
       <main class="main">
         <div class="mobile-topbar">
-          <button class="mobile-nav-toggle" id="mobile-menu-btn" onclick="openMobileNav()" aria-label="Open navigation">☰</button>
+          <button class="mobile-nav-toggle" id="mobile-menu-btn" onclick="openMobileNav()" aria-label="Open navigation">鈽?/button>
           <div class="mobile-brand">
             <div class="mobile-brand-title">My Little Shelter</div>
             <div class="mobile-brand-sub">personal shelf</div>
@@ -65,22 +65,22 @@
         <section class="header-shell">
           <div class="header-copy">
             <p class="eyebrow">personal cultural shelter</p>
-            <h1 class="page-title" id="page-title">Vous avez trouvé un très bon refuge</h1>
-            <p class="page-sub" id="page-sub">您找到了一个很好的藏身之处</p>
+            <h1 class="page-title" id="page-title">Vous avez trouv茅 un tr猫s bon refuge</h1>
+            <p class="page-sub" id="page-sub">鎮ㄦ壘鍒颁簡涓€涓緢濂界殑钘忚韩涔嬪</p>
           </div>
 
           <div class="toolbar-shell" id="toolbar-wrap">
             <div class="toolbar-primary">
               <div class="search-wrap search-wrap-large">
-                <span class="search-icon">⌕</span>
-                <input type="text" id="search-input" placeholder="搜索标题、创作者、标签、随手记……" oninput="render()" />
+                <span class="search-icon">鈱?/span>
+                <input type="text" id="search-input" placeholder="鎼滅储鏍囬銆佸垱浣滆€呫€佹爣绛俱€侀殢鎵嬭鈥︹€? oninput="render()" />
               </div>
 
               <div class="toolbar-actions">
                 <div class="view-toggle" aria-label="切换展示方式">
-                  <button class="btn btn-ghost btn-sm" id="view-card-btn" onclick="setViewMode('card')" title="卡片视图">▣</button>
-                  <button class="btn btn-ghost btn-sm" id="view-wall-btn" onclick="setViewMode('wall')" title="海报墙视图">▦</button>
-                  <button class="btn btn-ghost btn-sm" id="view-list-btn" onclick="setViewMode('list')" title="紧凑列表视图">☰</button>
+                  <button class="btn btn-ghost btn-sm" id="view-card-btn" onclick="setView('card')" title="卡片视图">卡片</button>
+                  <button class="btn btn-ghost btn-sm" id="view-wall-btn" onclick="setView('wall')" title="海报墙视图">海报墙</button>
+                  <button class="btn btn-ghost btn-sm" id="view-list-btn" onclick="setView('list')" title="列表视图">列表</button>
                 </div>
 
                 <select class="sort-select" id="sort-select" onchange="render()">
@@ -89,7 +89,7 @@
                   <option value="dscore">Douban rating</option>
                   <option value="title">Title</option>
                 </select>
-                <button class="btn btn-primary" id="primary-add-btn" onclick="openAdd()">新增记录</button>
+                <button class="btn btn-primary" id="primary-add-btn" onclick="openAdd()">鏂板璁板綍</button>
               </div>
             </div>
 
@@ -98,10 +98,10 @@
 
               <div class="toolbar-secondary-actions">
                 <div class="utility-actions" aria-label="secondary actions">
-                  <button class="btn btn-ghost btn-sm btn-muted" onclick="openExport()">导出</button>
-                  <button class="btn btn-ghost btn-sm btn-muted" onclick="openImport()">导入</button>
+                  <button class="btn btn-ghost btn-sm btn-muted" onclick="openExport()">瀵煎嚭</button>
+                  <button class="btn btn-ghost btn-sm btn-muted" onclick="openImport()">瀵煎叆</button>
                 </div>
-                <div class="filter-summary" id="filter-summary">正在看全部藏品</div>
+                <div class="filter-summary" id="filter-summary">姝ｅ湪鐪嬪叏閮ㄨ棌鍝?/div>
                 <button class="btn btn-ghost" id="more-filters-btn" onclick="toggleAdvancedFilters()">
                   More Filters
                 </button>
@@ -123,7 +123,7 @@
 
                 <div class="field">
                   <label for="filter-tags">Tags</label>
-                  <input type="text" id="filter-tags" placeholder="例如：赛博朋克 / 二刷推荐" />
+                  <input type="text" id="filter-tags" placeholder="渚嬪锛氳禌鍗氭湅鍏?/ 浜屽埛鎺ㄨ崘" />
                 </div>
 
                 <div class="field">
@@ -135,11 +135,11 @@
                   <label for="filter-type">Type</label>
                   <select id="filter-type">
                     <option value="all">All</option>
-                    <option value="movie">电影</option>
-                    <option value="tv">电视剧</option>
-                    <option value="anime">动漫</option>
-                    <option value="documentary">纪录片</option>
-                    <option value="book">书籍</option>
+                    <option value="movie">鐢靛奖</option>
+                    <option value="tv">鐢佃鍓?/option>
+                    <option value="anime">鍔ㄦ极</option>
+                    <option value="documentary">绾綍鐗?/option>
+                    <option value="book">涔︾睄</option>
                   </select>
                 </div>
 
@@ -147,16 +147,16 @@
                   <label for="filter-status">Status</label>
                   <select id="filter-status">
                     <option value="all">All</option>
-                    <option value="want">待看 / 待读</option>
-                    <option value="progress">正在进行</option>
-                    <option value="done">已看 / 已读</option>
-                    <option value="drop">搁置</option>
+                    <option value="want">寰呯湅 / 寰呰</option>
+                    <option value="progress">姝ｅ湪杩涜</option>
+                    <option value="done">宸茬湅 / 宸茶</option>
+                    <option value="drop">鎼佺疆</option>
                   </select>
                 </div>
 
                 <div class="field filter-actions">
-                  <label> </label>
-                  <button class="btn btn-outline" onclick="clearAdvancedFilters()">清空筛选</button>
+                  <label>聽</label>
+                  <button class="btn btn-outline" onclick="clearAdvancedFilters()">娓呯┖绛涢€?/button>
                 </div>
               </div>
             </div>
@@ -164,7 +164,7 @@
         </section>
 
         <section class="content-shell">
-          <div id="view-cards">
+          <div id="view-card">
             <div class="cards-grid" id="cards-grid"></div>
           </div>
 
@@ -172,7 +172,7 @@
             <div class="poster-wall" id="poster-wall"></div>
           </div>
 
-          <div id="view-compact-list" style="display:none">
+          <div id="view-list" style="display:none">
             <div class="compact-list" id="compact-list"></div>
           </div>
 
@@ -195,73 +195,73 @@
   <div class="overlay" id="modal-add" onclick="bgClose(event,'modal-add')">
     <div class="modal">
       <div class="modal-hd">
-        <div class="modal-title" id="modal-add-title">新增记录</div>
-        <button class="modal-close" onclick="closeOverlay('modal-add')">✕</button>
+        <div class="modal-title" id="modal-add-title">鏂板璁板綍</div>
+        <button class="modal-close" onclick="closeOverlay('modal-add')">鉁?/button>
       </div>
 
       <div class="dbox">
-        <div class="dbox-label">Douban link — 粘贴后点自动填充</div>
+        <div class="dbox-label">Douban link 鈥?绮樿创鍚庣偣鑷姩濉厖</div>
         <div class="drow">
-          <input type="text" id="f-douban" placeholder="https://movie.douban.com/subject/…" />
-          <button class="dbtn" id="fetch-btn" onclick="fetchDouban()">自动填充</button>
+          <input type="text" id="f-douban" placeholder="https://movie.douban.com/subject/鈥? />
+          <button class="dbtn" id="fetch-btn" onclick="fetchDouban()">鑷姩濉厖</button>
         </div>
         <div class="dhint" id="fetch-hint"></div>
       </div>
 
       <div class="fgrid">
-        <div class="field ffull"><label>标题 *</label><input type="text" id="f-title" placeholder="片名 / 书名" /></div>
-        <div class="field ffull"><label>封面图链接</label><input type="text" id="f-cover" placeholder="https://…（可留空）" /></div>
-        <div class="field"><label>创作者</label><input type="text" id="f-creator" /></div>
-        <div class="field"><label>年份</label><input type="text" id="f-year" placeholder="2024" /></div>
+        <div class="field ffull"><label>鏍囬 *</label><input type="text" id="f-title" placeholder="鐗囧悕 / 涔﹀悕" /></div>
+        <div class="field ffull"><label>灏侀潰鍥鹃摼鎺?/label><input type="text" id="f-cover" placeholder="https://鈥︼紙鍙暀绌猴級" /></div>
+        <div class="field"><label>鍒涗綔鑰?/label><input type="text" id="f-creator" /></div>
+        <div class="field"><label>骞翠唤</label><input type="text" id="f-year" placeholder="2024" /></div>
         <div class="field">
-          <label>分类</label>
+          <label>鍒嗙被</label>
           <select id="f-type">
-            <option value="movie">电影</option>
-            <option value="tv">电视剧</option>
-            <option value="anime">动漫</option>
-            <option value="documentary">纪录片</option>
-            <option value="book">书籍</option>
+            <option value="movie">鐢靛奖</option>
+            <option value="tv">鐢佃鍓?/option>
+            <option value="anime">鍔ㄦ极</option>
+            <option value="documentary">绾綍鐗?/option>
+            <option value="book">涔︾睄</option>
           </select>
         </div>
         <div class="field">
-          <label>状态</label>
+          <label>鐘舵€?/label>
           <select id="f-status">
-            <option value="want">待看 / 待读</option>
-            <option value="progress">正在看 / 正在读</option>
-            <option value="done">已看 / 已读</option>
-            <option value="drop">搁置</option>
+            <option value="want">寰呯湅 / 寰呰</option>
+            <option value="progress">姝ｅ湪鐪?/ 姝ｅ湪璇?/option>
+            <option value="done">宸茬湅 / 宸茶</option>
+            <option value="drop">鎼佺疆</option>
           </select>
         </div>
-        <div class="field"><label>豆瓣评分</label><input type="text" id="f-dscore" placeholder="8.5" /></div>
-        <div class="field"><label>标签（逗号分隔）</label><input type="text" id="f-tags" placeholder="剧情, 意识流, 二刷推荐" /></div>
-        <div class="field ffull"><label>我的评分</label><div class="spicker" id="star-picker"></div></div>
+        <div class="field"><label>璞嗙摚璇勫垎</label><input type="text" id="f-dscore" placeholder="8.5" /></div>
+        <div class="field"><label>鏍囩锛堥€楀彿鍒嗛殧锛?/label><input type="text" id="f-tags" placeholder="鍓ф儏, 鎰忚瘑娴? 浜屽埛鎺ㄨ崘" /></div>
+        <div class="field ffull"><label>鎴戠殑璇勫垎</label><div class="spicker" id="star-picker"></div></div>
         <div class="field ffull">
-          <label>观看心情</label>
+          <label>瑙傜湅蹇冩儏</label>
           <div class="mpicker" id="mood-picker"></div>
         </div>
         <div class="field ffull" id="remind-field">
-          <label>观看提醒（仅待看）</label>
+          <label>瑙傜湅鎻愰啋锛堜粎寰呯湅锛?/label>
           <input type="date" id="f-remind" />
         </div>
         <div class="field ffull" id="progress-field" style="display:none">
-          <label>当前进度</label>
-          <input type="text" id="f-progress" placeholder="例如：45% / S2 E5 / 读到第 162 页" />
+          <label>褰撳墠杩涘害</label>
+          <input type="text" id="f-progress" placeholder="渚嬪锛?5% / S2 E5 / 璇诲埌绗?162 椤? />
         </div>
-        <div class="field ffull"><label>简介</label><textarea id="f-desc" placeholder="剧情 / 内容简介"></textarea></div>
-        <div class="field ffull"><label>随手记</label><textarea id="f-quick-note" placeholder="一句碎碎念也行"></textarea></div>
-        <div class="field ffull"><label>观后感 / 读后感</label><textarea id="f-note" placeholder="写下完整一点的感受"></textarea></div>
+        <div class="field ffull"><label>绠€浠?/label><textarea id="f-desc" placeholder="鍓ф儏 / 鍐呭绠€浠?></textarea></div>
+        <div class="field ffull"><label>闅忔墜璁?/label><textarea id="f-quick-note" placeholder="涓€鍙ョ纰庡康涔熻"></textarea></div>
+        <div class="field ffull"><label>瑙傚悗鎰?/ 璇诲悗鎰?/label><textarea id="f-note" placeholder="鍐欎笅瀹屾暣涓€鐐圭殑鎰熷彈"></textarea></div>
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeOverlay('modal-add')">取消</button>
-        <button class="btn btn-primary" id="save-btn" onclick="saveItem()">保存记录</button>
+        <button class="btn btn-ghost" onclick="closeOverlay('modal-add')">鍙栨秷</button>
+        <button class="btn btn-primary" id="save-btn" onclick="saveItem()">淇濆瓨璁板綍</button>
       </div>
     </div>
   </div>
 
   <div class="panel-overlay" id="panel-overlay" onclick="if(event.target===this)closeOverlay('panel-overlay')">
     <div class="panel">
-      <button class="panel-close" onclick="closeOverlay('panel-overlay')">✕</button>
+      <button class="panel-close" onclick="closeOverlay('panel-overlay')">鉁?/button>
       <div id="panel-content"></div>
     </div>
   </div>
@@ -269,14 +269,14 @@
   <div class="overlay" id="modal-export" onclick="bgClose(event,'modal-export')">
     <div class="modal modal-sm">
       <div class="modal-hd">
-        <div class="modal-title">导出备份</div>
-        <button class="modal-close" onclick="closeOverlay('modal-export')">✕</button>
+        <div class="modal-title">瀵煎嚭澶囦唤</div>
+        <button class="modal-close" onclick="closeOverlay('modal-export')">鉁?/button>
       </div>
-      <p class="modal-copy">将你的真实记录导出为 JSON 文件。这个导出不包含前端补充的展示样本，只会保留你自己的数据。</p>
+      <p class="modal-copy">灏嗕綘鐨勭湡瀹炶褰曞鍑轰负 JSON 鏂囦欢銆傝繖涓鍑轰笉鍖呭惈鍓嶇琛ュ厖鐨勫睍绀烘牱鏈紝鍙細淇濈暀浣犺嚜宸辩殑鏁版嵁銆?/p>
       <div id="export-preview" class="meta-preview"></div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeOverlay('modal-export')">取消</button>
-        <button class="btn btn-primary" onclick="doExport()">下载 JSON</button>
+        <button class="btn btn-ghost" onclick="closeOverlay('modal-export')">鍙栨秷</button>
+        <button class="btn btn-primary" onclick="doExport()">涓嬭浇 JSON</button>
       </div>
     </div>
   </div>
@@ -284,18 +284,18 @@
   <div class="overlay" id="modal-import" onclick="bgClose(event,'modal-import')">
     <div class="modal modal-sm">
       <div class="modal-hd">
-        <div class="modal-title">导入数据</div>
-        <button class="modal-close" onclick="closeOverlay('modal-import')">✕</button>
+        <div class="modal-title">瀵煎叆鏁版嵁</div>
+        <button class="modal-close" onclick="closeOverlay('modal-import')">鉁?/button>
       </div>
-      <p class="modal-copy">选择导出的 JSON 文件。导入会覆盖当前已保存的数据，请先确认你已经做好备份。</p>
+      <p class="modal-copy">閫夋嫨瀵煎嚭鐨?JSON 鏂囦欢銆傚鍏ヤ細瑕嗙洊褰撳墠宸蹭繚瀛樼殑鏁版嵁锛岃鍏堢‘璁や綘宸茬粡鍋氬ソ澶囦唤銆?/p>
       <div class="field modal-field">
-        <label>选择 JSON 文件</label>
+        <label>閫夋嫨 JSON 鏂囦欢</label>
         <input type="file" id="import-file" accept=".json" />
       </div>
       <div id="import-msg" class="modal-message"></div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeOverlay('modal-import')">取消</button>
-        <button class="btn btn-danger" onclick="doImport()">导入并覆盖</button>
+        <button class="btn btn-ghost" onclick="closeOverlay('modal-import')">鍙栨秷</button>
+        <button class="btn btn-danger" onclick="doImport()">瀵煎叆骞惰鐩?/button>
       </div>
     </div>
   </div>
@@ -303,16 +303,16 @@
   <div class="overlay" id="modal-rewatch" onclick="bgClose(event,'modal-rewatch')">
     <div class="modal modal-sm">
       <div class="modal-hd">
-        <div class="modal-title">添加重看记录</div>
-        <button class="modal-close" onclick="closeOverlay('modal-rewatch')">✕</button>
+        <div class="modal-title">娣诲姞閲嶇湅璁板綍</div>
+        <button class="modal-close" onclick="closeOverlay('modal-rewatch')">鉁?/button>
       </div>
       <div class="fgrid modal-single-grid">
-        <div class="field"><label>重看日期</label><input type="date" id="rw-date" /></div>
-        <div class="field"><label>这次的感受</label><textarea id="rw-note" placeholder="这次重看和第一次有什么不同？"></textarea></div>
+        <div class="field"><label>閲嶇湅鏃ユ湡</label><input type="date" id="rw-date" /></div>
+        <div class="field"><label>杩欐鐨勬劅鍙?/label><textarea id="rw-note" placeholder="杩欐閲嶇湅鍜岀涓€娆℃湁浠€涔堜笉鍚岋紵"></textarea></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeOverlay('modal-rewatch')">取消</button>
-        <button class="btn btn-primary" onclick="saveRewatch()">添加</button>
+        <button class="btn btn-ghost" onclick="closeOverlay('modal-rewatch')">鍙栨秷</button>
+        <button class="btn btn-primary" onclick="saveRewatch()">娣诲姞</button>
       </div>
     </div>
   </div>
@@ -320,3 +320,4 @@
   <script src="/script.js"></script>
 </body>
 </html>
+

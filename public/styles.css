@@ -543,6 +543,7 @@ body.is-guest .toolbar-actions .btn-primary {
 
 .view-toggle .btn {
   min-width: 2.5rem;
+  white-space: nowrap;
 }
 
 .view-toggle .btn.is-active {

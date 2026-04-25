@@ -1050,6 +1050,10 @@ function setViewMode(mode, options = {}) {
   renderActiveView();
 }
 
+function setView(mode) {
+  setViewMode(mode);
+}
+
 function renderSidebarStats() {
   const shelfItems = getShelfItems();
   const doneItems = shelfItems.filter((item) => item.status === "done");
@@ -1440,7 +1444,7 @@ function renderMoodCalendar() {
 }
 
 function setVisibleView(viewId) {
-  ["view-cards", "view-wall", "view-compact-list", "view-stats", "view-quotes", "view-calendar"].forEach((id) => {
+  ["view-card", "view-wall", "view-list", "view-stats", "view-quotes", "view-calendar"].forEach((id) => {
     const element = document.getElementById(id);
     if (element) {
       element.style.display = id === viewId ? "block" : "none";
@@ -1542,12 +1546,12 @@ function renderBrowseView() {
   }
 
   if (viewMode === "list") {
-    setVisibleView("view-compact-list");
+    setVisibleView("view-list");
     renderCompactList();
     return;
   }
 
-  setVisibleView("view-cards");
+  setVisibleView("view-card");
   renderCards();
 }
 
@@ -2998,6 +3002,7 @@ window.addEventListener("resize", syncMobileNavOnResize);
 window.setNav = setNav;
 window.setPill = setPill;
 window.setCategoryTab = setCategoryTab;
+window.setView = setView;
 window.setViewMode = setViewMode;
 window.renderWall = renderWall;
 window.renderCompactList = renderCompactList;

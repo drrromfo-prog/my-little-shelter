@@ -2082,6 +2082,11 @@ function updateAdminUI() {
     sidebarSession.innerHTML = renderSessionMarkup();
   }
 
+  const brandSession = document.getElementById("brand-session");
+  if (brandSession) {
+    brandSession.innerHTML = renderSessionMarkup();
+  }
+
   const mobileSession = document.getElementById("mobile-session");
   if (mobileSession) {
     mobileSession.innerHTML = renderSessionMarkup({ mobile: true });
@@ -2095,7 +2100,7 @@ async function loadAdminSession() {
     const payload = await requestJson("/api/admin/session");
     adminState = {
       authenticated: Boolean(payload.authenticated),
-      configured: Boolean(payload.configured)
+      configured: Boolean(payload.admin_enabled ?? payload.configured)
     };
   } catch (error) {
     console.error("Failed to load admin session:", error);

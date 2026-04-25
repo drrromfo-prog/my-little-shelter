@@ -1226,10 +1226,12 @@ app.get("/healthz", (req, res) => {
 });
 
 app.get("/api/admin/session", (req, res) => {
+  const adminEnabled = Boolean(ADMIN_PASSWORD);
   res.json({
     success: true,
     authenticated: isAdminAuthenticated(req),
-    configured: Boolean(ADMIN_PASSWORD)
+    configured: adminEnabled,
+    admin_enabled: adminEnabled
   });
 });
 

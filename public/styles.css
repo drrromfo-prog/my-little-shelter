@@ -2285,12 +2285,23 @@ body.is-guest .toolbar-actions .btn-primary {
   }
 
   .poster-wall {
-    gap: 4px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .wall-item {
-    width: calc((100vw - 2.6rem) / 4);
-    height: calc(((100vw - 2.6rem) / 4) * 1.5);
+    width: 100%;
+    height: auto;
+    aspect-ratio: 2 / 3;
+  }
+
+  @media (min-width: 430px) and (max-width: 768px) {
+    .poster-wall {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
   }
 
   .compact-row {

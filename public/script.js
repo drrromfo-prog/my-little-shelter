@@ -10,7 +10,7 @@ let adminState = {
   configured: false
 };
 let mobileNavOpen = false;
-let mobilePageState = "browse";
+let mobilePageState = "home";
 let rewatchTargetId = null;
 let quoteWorkFilter = "all";
 let calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -2219,8 +2219,8 @@ function isBrowseNav(nav = currentNav) {
 
 function updateMobilePageChrome() {
   const isMobile = isMobileViewport();
-  const showHome = false;
-  const showBrowse = isMobile;
+  const showHome = isMobile && mobilePageState === "home";
+  const showBrowse = isMobile && !showHome;
   const showSubpage = isMobile && currentNav !== "all";
   const copy = PAGE_COPY[currentNav] || PAGE_COPY.all;
 
@@ -2256,9 +2256,16 @@ function enterMobileBrowse(nav = "all") {
 }
 
 function showMobileHome() {
-  mobilePageState = "browse";
+  mobilePageState = "home";
   closeMobileNav();
-  setNav("all");
+  currentNav = "all";
+  activePill = "type-all";
+  document.querySelectorAll(".nav-item").forEach((button) => button.classList.remove("active"));
+  document.getElementById("nav-all")?.classList.add("active");
+  const copy = PAGE_COPY.all;
+  document.getElementById("page-title").textContent = copy.title;
+  document.getElementById("page-sub").textContent = copy.subtitle;
+  renderActiveView();
 }
 
 function openRandomItem() {

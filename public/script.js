@@ -10,6 +10,7 @@ let adminState = {
   configured: false
 };
 let mobileNavOpen = false;
+let mobilePageState = "home";
 let rewatchTargetId = null;
 let quoteWorkFilter = "all";
 let calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -1600,6 +1601,10 @@ function setCategoryTab(category) {
 }
 
 function setNav(nav) {
+  if (isMobileViewport()) {
+    mobilePageState = "browse";
+  }
+
   currentNav = nav;
 
   if (nav === "all") {
@@ -2204,6 +2209,67 @@ function toggleAdminLogin() {
   openAdminLogin();
 }
 
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 768px)").matches;
+}
+
+function isBrowseNav(nav = currentNav) {
+  return !["quotes", "calendar", "stats"].includes(nav);
+}
+
+function updateMobilePageChrome() {
+  const isMobile = isMobileViewport();
+  const showHome = isMobile && mobilePageState === "home";
+  const showBrowse = isMobile && !showHome;
+  const copy = PAGE_COPY[currentNav] || PAGE_COPY.all;
+
+  document.body.classList.toggle("mobile-home-active", showHome);
+  document.body.classList.toggle("mobile-browse-active", showBrowse);
+
+  const home = document.getElementById("mobile-home");
+  if (home) {
+    home.hidden = !showHome;
+  }
+
+  const browseHead = document.getElementById("mobile-browse-head");
+  if (browseHead) {
+    browseHead.hidden = !showBrowse;
+  }
+
+  const browseTitle = document.getElementById("mobile-browse-title");
+  const browseSub = document.getElementById("mobile-browse-sub");
+  if (browseTitle) {
+    browseTitle.textContent = copy.title;
+  }
+  if (browseSub) {
+    browseSub.textContent = copy.subtitle;
+  }
+
+  return showHome;
+}
+
+function enterMobileBrowse(nav = "all") {
+  mobilePageState = "browse";
+  setNav(nav);
+}
+
+function showMobileHome() {
+  mobilePageState = "home";
+  closeMobileNav();
+  renderActiveView();
+}
+
+function openRandomItem() {
+  const shelfItems = getShelfItems();
+  if (shelfItems.length === 0) {
+    enterMobileBrowse("all");
+    return;
+  }
+
+  const item = shelfItems[Math.floor(Math.random() * shelfItems.length)];
+  openDetail(item.id);
+}
+
 function renderSessionMarkup({ mobile = false } = {}) {
   const modeClass = isAdminMode() ? "is-admin" : "is-guest";
   const modeLabel = isAdminMode() ? "Admin mode" : "Visitor mode";
@@ -2240,6 +2306,12 @@ function updateAdminUI() {
   }
   if (adminEntryButton) {
     adminEntryButton.textContent = isAdminMode() ? "✓ 已登录 · 退出" : "⚙ 管理";
+  }
+
+  const mobileAdminButton = document.getElementById("mobile-admin-btn");
+  if (mobileAdminButton) {
+    mobileAdminButton.hidden = !adminState.configured;
+    mobileAdminButton.textContent = isAdminMode() ? "✓ 退出" : "Admin";
   }
 
   document.querySelector(".toolbar-shell")?.classList.toggle("is-public", !isAdminMode());
@@ -2287,6 +2359,9 @@ async function loginAdmin() {
     adminState.authenticated = true;
     updateAdminUI();
     syncViewModeForRole();
+    if (isMobileViewport()) {
+      mobilePageState = "browse";
+    }
     closeOverlay("modal-admin-login");
     renderActiveView();
   } catch (error) {
@@ -2330,9 +2405,15 @@ function syncMobileNavOnResize() {
   if (window.innerWidth > 960 && mobileNavOpen) {
     closeMobileNav();
   }
+  updateMobilePageChrome();
+  renderActiveView();
 }
 
 function setNav(nav) {
+  if (isMobileViewport()) {
+    mobilePageState = "browse";
+  }
+
   currentNav = nav;
 
   if (nav === "all" || nav === "wall") {
@@ -2368,6 +2449,12 @@ function setNav(nav) {
 
 function renderActiveView() {
   renderSidebarStats();
+  const isMobileHome = updateMobilePageChrome();
+
+  if (isMobileHome) {
+    updateAdminUI();
+    return;
+  }
 
   const headerCopy = document.querySelector(".header-copy");
   const toolbarShell = document.getElementById("toolbar-wrap");
@@ -2378,7 +2465,8 @@ function renderActiveView() {
     headerCopy.style.display = "";
   }
   if (toolbarShell) {
-    toolbarShell.style.display = currentNav === "all" ? "" : "none";
+    const showMobileBrowseToolbar = isMobileViewport() && isBrowseNav(currentNav);
+    toolbarShell.style.display = currentNav === "all" || showMobileBrowseToolbar ? "" : "none";
   }
   if (mainShell) {
     mainShell.classList.toggle("is-compact", !showFullHeader);
@@ -3025,6 +3113,9 @@ window.openAdminLogin = openAdminLogin;
 window.toggleAdminLogin = toggleAdminLogin;
 window.loginAdmin = loginAdmin;
 window.logoutAdmin = logoutAdmin;
+window.enterMobileBrowse = enterMobileBrowse;
+window.showMobileHome = showMobileHome;
+window.openRandomItem = openRandomItem;
 window.openMobileNav = openMobileNav;
 window.closeMobileNav = closeMobileNav;
 window.render = render;

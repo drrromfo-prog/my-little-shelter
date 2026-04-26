@@ -2096,3 +2096,214 @@ body.is-guest .toolbar-actions .btn-primary {
     justify-content: flex-end;
   }
 }
+
+@media (max-width: 768px) {
+  .mobile-admin-entry {
+    border: 1px solid rgba(122, 111, 98, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 252, 247, 0.86);
+    color: var(--ink-3);
+    padding: 0.5rem 0.72rem;
+    font-size: 0.78rem;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .mobile-admin-entry[hidden],
+  .mobile-home[hidden],
+  .mobile-browse-head[hidden] {
+    display: none !important;
+  }
+
+  .mobile-home {
+    display: block;
+    min-height: calc(100vh - 5rem);
+    padding: 2.4rem 0 1.2rem;
+  }
+
+  .mobile-home-card {
+    min-height: 64vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    border-radius: 30px;
+    padding: 2rem 1.35rem;
+    background:
+      radial-gradient(circle at 80% 12%, rgba(var(--ambient-rgb), 0.16), transparent 42%),
+      rgba(255, 252, 247, 0.88);
+    border: 1px solid rgba(122, 111, 98, 0.12);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mobile-home-kicker {
+    margin: 0;
+    color: var(--ink-4);
+    font-size: 0.76rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .mobile-home h1 {
+    margin: 0;
+    font-family: "Noto Serif SC", serif;
+    font-size: clamp(2.15rem, 12vw, 3.4rem);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+
+  .mobile-home p {
+    margin: 0;
+    color: var(--ink-3);
+    line-height: 1.8;
+  }
+
+  .mobile-home-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 1rem;
+  }
+
+  body.mobile-home-active .header-shell,
+  body.mobile-home-active .content-shell {
+    display: none;
+  }
+
+  body.mobile-browse-active .header-copy {
+    display: none !important;
+  }
+
+  .mobile-browse-head {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .mobile-browse-title {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.24rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .mobile-browse-sub {
+    color: var(--ink-4);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    margin-top: 0.12rem;
+  }
+
+  .toolbar-shell {
+    gap: 0.72rem;
+    border-radius: 22px;
+    padding: 0.78rem;
+  }
+
+  .toolbar-primary,
+  .toolbar-secondary {
+    gap: 0.65rem;
+  }
+
+  .search-wrap {
+    min-width: 0;
+  }
+
+  .search-wrap input {
+    height: 2.72rem;
+    font-size: 0.9rem;
+  }
+
+  .toolbar-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  .view-toggle {
+    overflow-x: auto;
+  }
+
+  .sort-select {
+    min-width: 8rem;
+    height: 2.72rem;
+  }
+
+  #primary-add-btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .filter-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.12rem;
+  }
+
+  .pill {
+    flex: 0 0 auto;
+  }
+
+  .filter-summary,
+  #more-filters-btn,
+  .advanced-filters {
+    display: none !important;
+  }
+
+  .utility-actions {
+    justify-content: flex-end;
+  }
+
+  .content-shell {
+    margin-top: 1rem;
+  }
+
+  .cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.78rem;
+  }
+
+  .poster-wall {
+    gap: 4px;
+  }
+
+  .wall-item {
+    width: calc((100vw - 2.6rem) / 4);
+    height: calc(((100vw - 2.6rem) / 4) * 1.5);
+  }
+
+  .compact-row {
+    min-height: 3.8rem;
+  }
+
+  .overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: none;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: 24px 24px 0 0;
+    padding: 1.15rem 1rem 0;
+  }
+
+  .modal-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin: 1rem -1rem 0;
+    padding: 0.85rem 1rem calc(0.85rem + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(251, 247, 240, 0.86), #fbf7f0 38%);
+    backdrop-filter: blur(12px);
+  }
+
+  .modal-footer .btn {
+    min-height: 2.7rem;
+  }
+
+  #modal-add .modal-footer .btn-primary {
+    flex: 1;
+  }
+}

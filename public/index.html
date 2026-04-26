@@ -60,9 +60,30 @@
             <div class="mobile-brand-title">My Little Shelter</div>
             <div class="mobile-brand-sub">personal shelf</div>
           </div>
+          <button class="mobile-admin-entry" id="mobile-admin-btn" onclick="toggleAdminLogin()" hidden>Admin</button>
         </div>
 
+        <section class="mobile-home" id="mobile-home" hidden>
+          <div class="mobile-home-card">
+            <p class="mobile-home-kicker">My Little Shelter</p>
+            <h1>Vous avez trouvé un très bon refuge</h1>
+            <p>您找到了一个很好的藏身之处</p>
+            <div class="mobile-home-actions">
+              <button class="btn btn-primary" onclick="enterMobileBrowse()">进入我的收藏</button>
+              <button class="btn btn-ghost" onclick="openRandomItem()">随机看看一部</button>
+            </div>
+          </div>
+        </section>
+
         <section class="header-shell">
+          <div class="mobile-browse-head" id="mobile-browse-head" hidden>
+            <button class="btn btn-ghost btn-sm" onclick="showMobileHome()">返回首页</button>
+            <div>
+              <div class="mobile-browse-title" id="mobile-browse-title">全部收藏</div>
+              <div class="mobile-browse-sub" id="mobile-browse-sub">轻轻翻一翻</div>
+            </div>
+          </div>
+
           <div class="header-copy">
             <p class="eyebrow">personal cultural shelter</p>
             <h1 class="page-title" id="page-title">Vous avez trouvé un très bon refuge</h1>

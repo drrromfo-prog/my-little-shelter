@@ -719,7 +719,7 @@ body.is-guest .toolbar-actions .btn-primary {
   background: rgba(255, 255, 255, 0.9);
   box-shadow: var(--shadow-xs);
   cursor: pointer;
-  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .card:hover {
@@ -742,7 +742,7 @@ body.is-guest .toolbar-actions .btn-primary {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.36s ease;
+  transition: transform 0.2s ease;
 }
 
 .card:hover .card-cover img {
@@ -969,7 +969,7 @@ body.is-guest .toolbar-actions .btn-primary {
 .poster-wall {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .wall-item {
@@ -981,13 +981,14 @@ body.is-guest .toolbar-actions .btn-primary {
   cursor: pointer;
   flex-shrink: 0;
   background: var(--cream-3);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   z-index: 0;
 }
 
 .wall-item:hover {
-  transform: scale(1.08);
+  transform: scale(1.05);
   z-index: 10;
+  box-shadow: 0 14px 30px rgba(20, 16, 12, 0.24);
 }
 
 .wall-item img {
@@ -1010,9 +1011,10 @@ body.is-guest .toolbar-actions .btn-primary {
 .wall-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, transparent 55%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 62%);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -1021,6 +1023,7 @@ body.is-guest .toolbar-actions .btn-primary {
 
 .wall-item:hover .wall-overlay {
   opacity: 1;
+  transform: translateY(0);
 }
 
 .wall-title {
@@ -1053,7 +1056,7 @@ body.is-guest .toolbar-actions .btn-primary {
 .compact-list {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid rgba(122, 111, 98, 0.12);
+  border-top: 1px solid rgba(122, 111, 98, 0.08);
 }
 
 .compact-row {
@@ -1062,18 +1065,18 @@ body.is-guest .toolbar-actions .btn-primary {
   grid-template-columns: 120px minmax(0, 1fr) 70px 68px 92px;
   align-items: center;
   gap: 0.85rem;
-  padding: 0.9rem 0.35rem;
+  padding: 1rem 0.35rem;
   border: 0;
-  border-bottom: 1px solid rgba(122, 111, 98, 0.12);
+  border-bottom: 1px solid rgba(122, 111, 98, 0.07);
   background: transparent;
   text-align: left;
   color: var(--ink-2);
   cursor: pointer;
-  transition: background 0.18s ease, transform 0.18s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .compact-row:hover {
-  background: rgba(255, 252, 247, 0.82);
+  background: rgba(255, 252, 247, 0.72);
 }
 
 .compact-type,
@@ -1095,7 +1098,8 @@ body.is-guest .toolbar-actions .btn-primary {
 }
 
 .compact-score {
-  color: var(--ink-3);
+  color: var(--ink-2);
+  font-weight: 600;
 }
 
 .compact-status {

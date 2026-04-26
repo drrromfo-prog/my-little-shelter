@@ -2421,12 +2421,7 @@ function renderCards() {
   }
 
   container.innerHTML = filtered.map((item) => {
-    const tags = item.tags.slice(0, 3);
     const creatorRow = [item.creator, item.year].filter(Boolean).join(" · ");
-    const preview = itemPreviewText(item);
-    const progress = item.status === "progress" && item.progress
-      ? `<span class="progress-chip">${escapeHtml(item.progress)}</span>`
-      : "";
 
     return `
       <article class="card${item.isMock ? " is-mock" : ""}" data-card-id="${item.id}" data-accent="${escapeHtml(item.accentColor || "")}" onclick="openDetail('${item.id}')">
@@ -2444,9 +2439,6 @@ function renderCards() {
             ${item.rating ? `<span class="card-score"><span class="score-txt">${formatRatingLabel(item.rating)}</span></span>` : ""}
           </div>
           <h3 class="card-title">${escapeHtml(item.title)}</h3>
-          ${tags.length > 0 ? `<div class="card-tags">${tags.map((tag) => `<span class="tag ${tagColor(tag)}">${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
-          ${preview ? `<div class="card-snippet">${escapeHtml(preview)}</div>` : ""}
-          ${progress ? `<div class="card-foot">${progress}</div>` : ""}
         </div>
       </article>
     `;

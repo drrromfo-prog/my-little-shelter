@@ -2392,6 +2392,11 @@ async function logoutAdmin() {
 }
 
 function openMobileNav() {
+  if (mobileNavOpen) {
+    closeMobileNav();
+    return;
+  }
+
   mobileNavOpen = true;
   document.querySelector(".page-shell")?.classList.add("mobile-nav-open");
 }
@@ -2407,6 +2412,21 @@ function syncMobileNavOnResize() {
   }
   updateMobilePageChrome();
   renderActiveView();
+}
+
+function bindMobileSidebarNavigation() {
+  document.querySelectorAll(".sidebar .nav-item[id^='nav-']").forEach((button) => {
+    const nav = button.id.replace(/^nav-/, "");
+    button.addEventListener("click", (event) => {
+      if (!isMobileViewport()) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      setNav(nav);
+    });
+  });
 }
 
 function setNav(nav) {
@@ -2445,6 +2465,10 @@ function setNav(nav) {
   document.getElementById("page-sub").textContent = copy.subtitle;
   closeMobileNav();
   renderActiveView();
+
+  if (isMobileViewport()) {
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+  }
 }
 
 function renderActiveView() {
@@ -3076,6 +3100,7 @@ syncAdvancedFiltersFromControls();
 toggleAdvancedFilters(false);
 syncViewModeForRole();
 ensureAdminLoginModal();
+bindMobileSidebarNavigation();
 loadAdminSession().then(loadItems);
 window.addEventListener("resize", syncMobileNavOnResize);
 

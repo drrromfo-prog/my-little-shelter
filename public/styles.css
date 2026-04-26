@@ -2108,6 +2108,18 @@ body.is-guest .toolbar-actions .btn-primary {
     box-shadow: var(--shadow-xs);
   }
 
+  .mobile-nav-scrim {
+    z-index: 48;
+  }
+
+  .sidebar {
+    z-index: 50;
+  }
+
+  .sidebar .nav-item {
+    pointer-events: auto;
+  }
+
   .mobile-admin-entry[hidden],
   .mobile-home[hidden],
   .mobile-browse-head[hidden] {
@@ -2175,9 +2187,21 @@ body.is-guest .toolbar-actions .btn-primary {
 
   .mobile-browse-head {
     display: flex;
-    align-items: center;
-    gap: 0.85rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
     margin-bottom: 0.8rem;
+  }
+
+  .mobile-back-btn {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    font-size: 0.78rem;
+    opacity: 0.6;
+    padding: 0 0 0.15rem;
   }
 
   .mobile-browse-title {
@@ -2206,7 +2230,7 @@ body.is-guest .toolbar-actions .btn-primary {
   }
 
   .search-wrap {
-    min-width: 0;
+    display: none;
   }
 
   .search-wrap input {
@@ -2216,7 +2240,7 @@ body.is-guest .toolbar-actions .btn-primary {
 
   .toolbar-actions {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr;
   }
 
   .view-toggle {
@@ -2224,8 +2248,7 @@ body.is-guest .toolbar-actions .btn-primary {
   }
 
   .sort-select {
-    min-width: 8rem;
-    height: 2.72rem;
+    display: none;
   }
 
   #primary-add-btn {
@@ -2245,12 +2268,10 @@ body.is-guest .toolbar-actions .btn-primary {
 
   .filter-summary,
   #more-filters-btn,
-  .advanced-filters {
-    display: none !important;
-  }
-
+  .advanced-filters,
+  .toolbar-secondary-actions,
   .utility-actions {
-    justify-content: flex-end;
+    display: none !important;
   }
 
   .content-shell {

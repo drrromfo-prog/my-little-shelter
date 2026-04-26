@@ -867,6 +867,7 @@ function normalizeDoubanRequestUrl(inputUrl) {
 
   const hostname = parsedUrl.hostname.toLowerCase();
   let category = null;
+  let subjectId = null;
 
   if (hostname === "movie.douban.com") {
     category = "movie";
@@ -876,6 +877,13 @@ function normalizeDoubanRequestUrl(inputUrl) {
     const mobileMatch = parsedUrl.pathname.match(/^\/(movie|book)\/subject\/(\d+)/i);
     if (mobileMatch) {
       category = mobileMatch[1].toLowerCase();
+      subjectId = mobileMatch[2];
+    }
+  } else if (hostname === "www.douban.com" || hostname === "douban.com") {
+    const appMatch = parsedUrl.pathname.match(/^\/doubanapp\/dispatch\/(movie|book)\/(\d+)/i);
+    if (appMatch) {
+      category = appMatch[1].toLowerCase();
+      subjectId = appMatch[2];
     }
   }
 
@@ -883,12 +891,14 @@ function normalizeDoubanRequestUrl(inputUrl) {
     return null;
   }
 
-  const subjectMatch = parsedUrl.pathname.match(/\/subject\/(\d+)/i);
-  if (!subjectMatch) {
-    return null;
+  if (!subjectId) {
+    const subjectMatch = parsedUrl.pathname.match(/\/subject\/(\d+)/i);
+    if (!subjectMatch) {
+      return null;
+    }
+    subjectId = subjectMatch[1];
   }
 
-  const subjectId = subjectMatch[1];
   return {
     subjectId,
     category,
@@ -1517,7 +1527,7 @@ app.get("/api/fetch-douban", requireAdmin, async (req, res) => {
     if (!doubanInfo) {
       return res.status(400).json({
         success: false,
-        error: "请粘贴有效的豆瓣电影或图书详情链接"
+        error: "无法识别豆瓣链接，请检查是否为电影/电视剧页面"
       });
     }
 

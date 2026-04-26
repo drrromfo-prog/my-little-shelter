@@ -10,7 +10,7 @@ let adminState = {
   configured: false
 };
 let mobileNavOpen = false;
-let mobilePageState = "home";
+let mobilePageState = "browse";
 let rewatchTargetId = null;
 let quoteWorkFilter = "all";
 let calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -2219,12 +2219,14 @@ function isBrowseNav(nav = currentNav) {
 
 function updateMobilePageChrome() {
   const isMobile = isMobileViewport();
-  const showHome = isMobile && mobilePageState === "home";
-  const showBrowse = isMobile && !showHome;
+  const showHome = false;
+  const showBrowse = isMobile;
+  const showSubpage = isMobile && currentNav !== "all";
   const copy = PAGE_COPY[currentNav] || PAGE_COPY.all;
 
   document.body.classList.toggle("mobile-home-active", showHome);
   document.body.classList.toggle("mobile-browse-active", showBrowse);
+  document.body.classList.toggle("mobile-subpage-active", showSubpage);
 
   const home = document.getElementById("mobile-home");
   if (home) {
@@ -2233,7 +2235,7 @@ function updateMobilePageChrome() {
 
   const browseHead = document.getElementById("mobile-browse-head");
   if (browseHead) {
-    browseHead.hidden = !showBrowse;
+    browseHead.hidden = !showSubpage;
   }
 
   const browseTitle = document.getElementById("mobile-browse-title");
@@ -2254,9 +2256,9 @@ function enterMobileBrowse(nav = "all") {
 }
 
 function showMobileHome() {
-  mobilePageState = "home";
+  mobilePageState = "browse";
   closeMobileNav();
-  renderActiveView();
+  setNav("all");
 }
 
 function openRandomItem() {
@@ -2392,6 +2394,10 @@ async function logoutAdmin() {
 }
 
 function openMobileNav() {
+  if (isMobileViewport()) {
+    return;
+  }
+
   if (mobileNavOpen) {
     closeMobileNav();
     return;

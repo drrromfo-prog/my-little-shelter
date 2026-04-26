@@ -2113,11 +2113,12 @@ body.is-guest .toolbar-actions .btn-primary {
   }
 
   .sidebar {
-    z-index: 50;
+    display: none !important;
   }
 
-  .sidebar .nav-item {
-    pointer-events: auto;
+  .mobile-nav-toggle,
+  .mobile-nav-scrim {
+    display: none !important;
   }
 
   .mobile-admin-entry[hidden],
@@ -2181,7 +2182,7 @@ body.is-guest .toolbar-actions .btn-primary {
     display: none;
   }
 
-  body.mobile-browse-active .header-copy {
+  body.mobile-subpage-active .header-copy {
     display: none !important;
   }
 

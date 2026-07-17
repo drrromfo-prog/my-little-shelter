@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "my-little-shelter",
+  "compatibility_date": "2026-07-17",
+  "pages_build_output_dir": "./public",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "my-little-shelter",
+      "database_id": "2a9f44a8-3c79-4bae-a04b-55d00c045cdc"
+    }
+  ]
+}

@@ -5,6 +5,8 @@
   "description": "A simple Node.js site for managing a movie and book list.",
   "scripts": {
     "build:tailwind": "postcss src/tailwind.css -o public/tailwind.css",
+    "build:cloudflare": "node scripts/build-cloudflare.js",
+    "deploy:cloudflare": "npm run build:cloudflare && wrangler pages deploy public --project-name my-little-shelter --branch main",
     "watch:tailwind": "postcss src/tailwind.css -o public/tailwind.css --watch",
     "start": "node server.js"
   },
@@ -12,7 +14,8 @@
     "autoprefixer": "^10.5.0",
     "postcss": "^8.5.10",
     "postcss-cli": "^11.0.1",
-    "tailwindcss": "^3.4.19"
+    "tailwindcss": "^3.4.19",
+    "wrangler": "^4.112.0"
   },
   "dependencies": {
     "better-sqlite3": "^12.9.0",

@@ -4,6 +4,7 @@ server.err
 *.log
 *.tmp
 *.bak
+public/_worker.js
 
 data/*.db
 data/*.db-shm

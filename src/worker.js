@@ -215,6 +215,52 @@ function parseDouban(html, info, origin) {
   };
 }
 
+function parseDoubanJson(data, info, origin) {
+  const names = (value) => Array.isArray(value)
+    ? value.map((entry) => clean(entry && typeof entry === "object" ? entry.name : entry)).filter(Boolean).join(" / ")
+    : "";
+  const cover = data.cover_url || data.cover?.large || data.cover?.normal || data.pic?.large || data.pic?.normal || "";
+  const rating = data.rating && typeof data.rating === "object" ? data.rating.value : data.rating;
+  const creator = info.category === "book" ? names(data.authors || data.author) : names(data.directors);
+
+  return {
+    title: clean(data.title),
+    cover_url: cover ? `${origin}/api/image-proxy?url=${encodeURIComponent(cover)}` : "",
+    creator,
+    year: clean(data.year),
+    category: info.category,
+    douban_rating: clean(rating),
+    summary: clean(data.intro || data.abstract),
+    tags: (Array.isArray(data.genres) ? data.genres : data.tags || [])
+      .map((entry) => clean(entry && typeof entry === "object" ? entry.name : entry))
+      .filter(Boolean)
+  };
+}
+
+async function fetchDoubanPayload(info, origin) {
+  const headers = {
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "accept-language": "zh-CN,zh;q=0.9",
+    referer: `https://m.douban.com/${info.category}/subject/${info.id}/`
+  };
+
+  try {
+    const response = await fetch(`https://m.douban.com/rexxar/api/v2/${info.category}/${info.id}`, { headers });
+    if (response.ok) {
+      const payload = parseDoubanJson(await response.json(), info, origin);
+      if (payload.title) return payload;
+    }
+  } catch (error) {
+    console.error("Douban JSON API fallback:", error);
+  }
+
+  const response = await fetch(info.url, { headers });
+  if (!response.ok) throw new Error("DOUBAN_UNAVAILABLE");
+  const payload = parseDouban(await response.text(), info, origin);
+  if (!payload.title) throw new Error("DOUBAN_UNRECOGNIZED");
+  return payload;
+}
+
 async function api(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -339,12 +385,14 @@ async function api(request, env) {
   if (path === "/api/fetch-douban" && method === "GET") {
     const denied = await requireAdmin(request, env); if (denied) return denied;
     const info = normalizeDoubanUrl(url.searchParams.get("url"));
-    if (!info) return json({ success: false, error: "无法识别豆瓣链接，请检查是否为电影/电视剧页面" }, 400);
-    const response = await fetch(info.url, { headers: { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36", "accept-language": "zh-CN,zh;q=0.9", referer: "https://www.douban.com/" } });
-    if (!response.ok) return json({ success: false, error: "豆瓣页面暂时无法访问，请稍后重试" }, 502);
-    const payload = parseDouban(await response.text(), info, url.origin);
-    if (!payload.title) return json({ success: false, error: "未能识别这条豆瓣内容，请换一个链接再试" }, 502);
-    return json({ success: true, source_url: info.url, douban_url: info.url, ...payload });
+    if (!info) return json({ success: false, error: "无法识别豆瓣链接，请检查是否为电影、电视剧或图书页面" }, 400);
+    try {
+      const payload = await fetchDoubanPayload(info, url.origin);
+      return json({ success: true, source_url: info.url, douban_url: info.url, ...payload });
+    } catch (error) {
+      console.error("GET /api/fetch-douban error:", error);
+      return json({ success: false, error: "豆瓣内容暂时无法获取，请稍后重试" }, 502);
+    }
   }
 
   return null;
